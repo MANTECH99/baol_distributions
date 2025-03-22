@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Baol Distributions</title>
+
+    <!-- Lien vers Bootstrap -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+    <style>
+        /* Sidebar */
+        .sidebar {
+            width: 170px;
+            height: 100vh;
+            position: fixed;
+            top: 0;
+            left: 0;
+            background: white;
+            padding-top: 60px; /* Descendre tout le sidebar */
+            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+        .sidebar img {
+            width: 185px; /* Taille du logo */
+            margin-bottom: 40px; /* Descendre le logo encore plus */
+                        margin-top: -40px; /* Descendre le logo encore plus */
+        }
+        .sidebar nav {
+            margin-top: -80px; /* Réduction de l'espace après le logo */
+        }
+        .sidebar a {
+            padding: 12px;
+            text-decoration: none;
+            font-size: 16px;
+            color: black;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+                        border-radius: 8px; /* Coins arrondis */
+            margin: 10px; /* Espacement */
+            transition: background 0.3s, color 0.3s;
+        }
+        .sidebar a i {
+            margin-right: 8px;
+            font-size: 18px;
+            color: var(--bs-primary);
+        }
+        .sidebar a:hover {
+            background: var(--bs-primary);
+            color: white;
+        }
+        .sidebar a.active {
+            background: var(--bs-primary);
+            color: white;
+            border-radius: 8px; /* Arrondi des coins */
+        }
+        .sidebar a.active i {
+            color: white;
+        }
+
+        /* Contenu principal */
+        .content {
+            margin-left: 170px;
+            padding: 20px;
+        }
+
+        /* Navbar */
+        .top-navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            background: white;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .navbar-left {
+            display: flex;
+            align-items: center;
+        }
+        .navbar-left h4 {
+            margin-left: 10px;
+            font-weight: bold;
+        }
+        .top-navbar input {
+            width: 250px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <!-- Logo -->
+        <img src="/static/images/logos.png" alt="Logo">
+
+        <!-- Liens -->
+        <nav>
+            <a href="{% url 'dashboard' %}" class="{% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
+                <i class="fas fa-home"></i> Dashboard
+            </a>
+            <a href="{% url 'liste_livraisons' %}" class="{% if request.resolver_match.url_name == 'liste_livraisons' %}active{% endif %}">
+                <i class="fas fa-truck"></i> Livraisons
+            </a>
+        </nav>
+    </div>
+
+    <!-- Navbar -->
+    <nav class="top-navbar navbar navbar-expand-lg bg-white">
+        <div class="container-fluid">
+            <!-- Logo + Nom -->
+            <div class="navbar-left">
+                <i class="fas fa-box text-primary fa-2x"></i>
+                <h4 class="text-primary mb-0">Baol Distributions</h4>
+            </div>
+
+            <!-- Champ de recherche -->
+            <form class="d-flex">
+                <input class="form-control me-2" type="search" placeholder="Rechercher..." aria-label="Search">
+                <button class="btn btn-outline-primary" type="submit"><i class="fas fa-search"></i></button>
+            </form>
+
+            <!-- Bouton de déconnexion -->
+            {% if user.is_authenticated %}
+            <form action="{% url 'logout' %}" method="post">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-danger"><i class="fas fa-sign-out-alt"></i> Déconnexion</button>
+            </form>
+            {% endif %}
+        </div>
+    </nav>
+
+    <!-- Contenu principal -->
+    <div class="content">
+        {% block content %}
+        {% endblock %}
+    </div>
+
+    <!-- Scripts Bootstrap -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+</body>
+</html>

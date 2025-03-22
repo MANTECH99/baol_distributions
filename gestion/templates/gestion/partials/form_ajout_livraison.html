@@ -1,0 +1,8 @@
+<p><strong>Camion :</strong> {{ camion.numero }}</p>
+<p><strong>Date :</strong> {{ selected_date|date:"j F Y" }}</p>
+
+<form method="POST" id="addLivraisonForm">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="btn btn-primary">Enregistrer</button>
+</form>

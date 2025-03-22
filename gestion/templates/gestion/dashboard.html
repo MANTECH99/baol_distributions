@@ -1,0 +1,167 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2><i class="fas fa-tachometer-alt text-primary"></i> Tableau de Bord 📊</h2><br>
+
+    <!-- Étape 1 : Choix du type de filtre -->
+    <div class="mb-3">
+        <label for="filter_type"><i class="fas fa-filter text-secondary"></i> Choisir le type de filtre :</label>
+        <select id="filter_type" name="filter_type" class="form-control d-inline-block w-auto" onchange="showFilterForm()">
+            <option value="">-- Sélectionnez un filtre --</option>
+            <option value="date" {% if filter_type == 'date' %}selected{% endif %}>Date personnalisée</option>
+            <option value="month" {% if filter_type == 'month' %}selected{% endif %}>Mois spécifique</option>
+            <option value="year" {% if filter_type == 'year' %}selected{% endif %}>Année spécifique</option>
+        </select>
+    </div><br>
+
+    <!-- Formulaire pour la date personnalisée -->
+    <div id="date_form" style="display: {% if filter_type == 'date' %}block{% else %}none{% endif %};">
+        <form method="GET" class="mb-3">
+            <input type="hidden" name="filter_type" value="date">
+            <label for="date"><i class="fas fa-calendar-day text-info"></i> Sélectionner une date :</label>
+            <input type="date" id="date" name="date" value="{{ selected_date|default:'' }}" class="form-control d-inline-block w-auto">
+            <button type="submit" class="btn btn-primary"><i class="fas fa-filter"></i> Filtrer</button>
+        </form>
+    </div>
+
+    <!-- Formulaire pour le mois spécifique -->
+    <div id="month_form" style="display: {% if filter_type == 'month' %}block{% else %}none{% endif %};">
+        <form method="GET" class="mb-3">
+            <input type="hidden" name="filter_type" value="month">
+            <label for="month"><i class="fas fa-calendar-alt text-warning"></i> Sélectionner un mois :</label>
+            <input type="month" id="month" name="month" value="{{ selected_month|default:'' }}" class="form-control d-inline-block w-auto">
+            <button type="submit" class="btn btn-primary"><i class="fas fa-filter"></i> Filtrer</button>
+        </form>
+    </div>
+
+    <!-- Formulaire pour l'année spécifique -->
+    <div id="year_form" style="display: {% if filter_type == 'year' %}block{% else %}none{% endif %};">
+        <form method="GET" class="mb-3">
+            <input type="hidden" name="filter_type" value="year">
+            <label for="year"><i class="fas fa-calendar text-danger"></i> Sélectionner une année :</label>
+            <select id="year" name="year" class="form-control d-inline-block w-auto">
+                {% for year in last_five_years %}
+                    <option value="{{ year }}" {% if selected_year == year %}selected{% endif %}>{{ year }}</option>
+                {% endfor %}
+            </select>
+            <button type="submit" class="btn btn-primary"><i class="fas fa-filter"></i> Filtrer</button>
+        </form>
+    </div>
+
+    <!-- Script JavaScript pour afficher le formulaire correspondant -->
+    <script>
+        function showFilterForm() {
+            const filterType = document.getElementById('filter_type').value;
+            document.getElementById('date_form').style.display = filterType === 'date' ? 'block' : 'none';
+            document.getElementById('month_form').style.display = filterType === 'month' ? 'block' : 'none';
+            document.getElementById('year_form').style.display = filterType === 'year' ? 'block' : 'none';
+        }
+    </script>
+
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card text-white bg-primary mb-3">
+                <div class="card-body">
+                    <h5 class="card-title"><i class="fas fa-weight text-light"></i> Total Tonnage</h5>
+                    <p class="card-text">{{ total_tonnage }} tonnes</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-white bg-success mb-3">
+                <div class="card-body">
+                    <h5 class="card-title"><i class="fas fa-money-bill-wave text-light"></i> Total Montant</h5>
+                    <p class="card-text">{{ total_montant }} F CFA</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-white bg-warning mb-3">
+                <div class="card-body">
+                    <h5 class="card-title"><i class="fas fa-truck text-light"></i> Nombre de Livraisons</h5>
+                    <p class="card-text">{{ total_livraisons }} Livraisons</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <h3 class="mt-4"><i class="fas fa-table text-secondary"></i> Tableau des Livraisons</h3>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th><i class="fas fa-calendar text-info"></i> Date</th>
+                <th><i class="fas fa-truck text-primary"></i> N° Camion</th>
+                <th><i class="fas fa-phone text-success"></i> Numéro Téléphone</th>
+                <th><i class="fas fa-weight text-warning"></i> Tonnage</th>
+                <th><i class="fas fa-dollar-sign text-danger"></i> Prix Unitaire</th>
+                <th><i class="fas fa-box text-secondary"></i> Quantité</th>
+                <th><i class="fas fa-money-bill-wave text-success"></i> Montant</th>
+                <th><i class="fas fa-recycle text-info"></i> Chiffonage</th>
+                <th><i class="fas fa-barcode text-primary"></i> N° BL</th>
+                <th><i class="fas fa-info-circle text-warning"></i> Statut</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for livraison in livraisons_mois %}
+                <tr>
+                    <td>{{ livraison.date }}</td>
+                    <td>{{ livraison.camion__numero }}</td>
+                    <td>{{ livraison.camion__telephone }}</td>
+                    <td>{{ livraison.tonnage }}</td>
+                    <td>{{ livraison.prix_unitaire }}</td>
+                    <td>{{ livraison.quantite }}</td>
+                    <td>{{ livraison.montant }}</td>
+                    <td>{{ livraison.chiffonage }}</td>
+                    <td>{{ livraison.numero_bl }}</td>
+                    <td>{{ livraison.statut }}</td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="10" class="text-center"><i class="fas fa-exclamation-circle text-danger"></i> Aucune livraison dans cette période</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <h3 class="mt-4"><i class="fas fa-chart-line text-primary"></i> Évolution des Livraisons 📈</h3>
+    <canvas id="tonnageChart" width="400" height="200"></canvas>
+    <canvas id="montantChart" width="400" height="200" class="mt-4"></canvas>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const moisLabels = JSON.parse('{{ mois_labels|safe }}');
+            const tonnageValues = JSON.parse('{{ tonnage_values|safe }}');
+            const montantValues = JSON.parse('{{ montant_values|safe }}');
+
+            // Graphique du tonnage
+            new Chart(document.getElementById('tonnageChart'), {
+                type: 'line',
+                data: {
+                    labels: moisLabels,
+                    datasets: [{
+                        label: 'Tonnage livré',
+                        data: tonnageValues,
+                        borderColor: 'blue',
+                        backgroundColor: 'rgba(0, 0, 255, 0.2)',
+                        fill: true
+                    }]
+                }
+            });
+
+            // Graphique du montant
+            new Chart(document.getElementById('montantChart'), {
+                type: 'bar',
+                data: {
+                    labels: moisLabels,
+                    datasets: [{
+                        label: 'Montant total (F CFA)',
+                        data: montantValues,
+                        backgroundColor: 'green'
+                    }]
+                }
+            });
+        });
+    </script>
+</div>
+{% endblock %}

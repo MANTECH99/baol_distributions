@@ -1,0 +1,7 @@
+<form method="POST" id="editLivraisonForm" action="{% url 'modifier_livraison' livraison.id %}">
+    {% csrf_token %}
+    <div class="mb-3">
+        {{ form.as_p }}
+    </div>
+    <button type="submit" class="btn btn-primary">Enregistrer</button>
+</form>

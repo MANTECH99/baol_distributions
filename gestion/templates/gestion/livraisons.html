@@ -1,0 +1,218 @@
+{% extends 'base.html' %}
+{% load custom_filters %}
+{% load l10n %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2><i class="fas fa-list text-primary"></i> Liste des Livraisons</h2><br>
+
+    <!-- Étape 1 : Choix du type de filtre -->
+    <div class="mb-3">
+        <label for="filter_type"><i class="fas fa-filter text-secondary"></i> Choisir le type de filtre :</label>
+        <select id="filter_type" name="filter_type" class="form-control d-inline-block w-auto" onchange="showFilterForm()">
+            <option value="">-- Sélectionnez un filtre --</option>
+            <option value="date" {% if filter_type == 'date' %}selected{% endif %}>Date personnalisée</option>
+            <option value="month" {% if filter_type == 'month' %}selected{% endif %}>Mois spécifique</option>
+        </select>&nbsp;&nbsp;&nbsp;
+
+            <a href="{% url 'exporter_livraisons_excel' %}?filter_type={{ filter_type }}&date={{ selected_date }}&month={{ selected_month }}"
+           class="btn btn-success">
+            <i class="fas fa-file-excel text-white"></i> Exporter en Excel
+        </a>
+    </div>
+
+    <!-- Étape 2 : Formulaire pour la date personnalisée -->
+    <div id="date_form" style="display: {% if filter_type == 'date' %}block{% else %}none{% endif %};">
+        <form method="GET" class="mb-3">
+            <input type="hidden" name="filter_type" value="date">
+            <label for="date"><i class="fas fa-calendar-day text-info"></i> Sélectionner une date :</label>
+            <input type="date" id="date" name="date" value="{{ selected_date|default:'' }}" class="form-control d-inline-block w-auto">
+            <button type="submit" class="btn btn-primary"><i class="fas fa-filter text-white"></i> Filtrer</button>
+        </form>
+    </div>
+
+    <!-- Étape 2 : Formulaire pour le mois spécifique -->
+    <div id="month_form" style="display: {% if filter_type == 'month' %}block{% else %}none{% endif %};">
+        <form method="GET" class="mb-3">
+            <input type="hidden" name="filter_type" value="month">
+            <label for="month"><i class="fas fa-calendar-alt text-warning"></i> Sélectionner un mois :</label>
+            <input type="month" id="month" name="month" value="{{ selected_month|default:'' }}" class="form-control d-inline-block w-auto">
+            <button type="submit" class="btn btn-primary"><i class="fas fa-filter text-white"></i> Filtrer</button>
+        </form>
+    </div>
+
+    <!-- Script JavaScript pour afficher le formulaire correspondant -->
+    <script>
+        function showFilterForm() {
+            const filterType = document.getElementById('filter_type').value;
+            document.getElementById('date_form').style.display = filterType === 'date' ? 'block' : 'none';
+            document.getElementById('month_form').style.display = filterType === 'month' ? 'block' : 'none';
+        }
+    </script>
+
+    <div class="table-responsive"> <!-- Conteneur responsive pour le tableau -->
+        <table class="table table-striped">
+            <thead class="table-green">
+                <tr>
+                    <th style="width: 16%;"><i class="fas fa-calendar text-info"></i> Date</th>
+                    <th style="width: 11%;"><i class="fas fa-truck text-primary"></i> Camion</th>
+                    <th style="width: 11%;"><i class="fas fa-phone text-success"></i> Téléphone</th>
+                    <th style="width: 10%;"><i class="fas fa-weight-hanging text-warning"></i> Tonnage</th>
+                    <th style="width: 8%;"><i class="fas fa-dollar-sign text-danger"></i> P U</th>
+                    <th style="width: 10%;"><i class="fas fa-box text-secondary"></i> Quantité</th>
+                    <th style="width: 11%;"><i class="fas fa-money-bill-wave text-success"></i> Montant</th>
+                    <th style="width: 12%;"><i class="fas fa-recycle text-info"></i> Chiffonage</th>
+                    <th style="width: 10%;"><i class="fas fa-barcode text-primary"></i> N° BL</th>
+                    <th style="width: 10%;"><i class="fas fa-info-circle text-warning"></i> Statut</th>
+                    <th style="width: 16%;"><i class="fas fa-cogs text-secondary"></i> Actions</th> <!-- Largeur augmentée pour la colonne Actions -->
+                </tr>
+            </thead>
+            <tbody>
+                {% for camion in camions %}
+                    {% with livraisons_par_camion|get_item:camion.id as livraisons %}
+                        {% if livraisons %}
+                            {% for livraison in livraisons %}
+                                <tr id="camion-{{ camion.id }}">
+                                    <td>{{ livraison.date|date:"j F Y" }}</td>
+                                    <td>{{ camion.numero }}</td>
+                                    <td>{{ camion.telephone }}</td>
+                                    <td>{{ livraison.tonnage }}</td>
+                                    <td>{{ livraison.prix_unitaire }}</td>
+                                    <td>{{ livraison.quantite }}</td>
+                                    <td>{{ livraison.montant }}</td>
+                                    <td>{{ livraison.chiffonage }}</td>
+                                    <td>{{ livraison.numero_bl }}</td>
+                                    <td>{{ livraison.get_statut_display }}</td>
+                                    <td>
+                                        <div class="d-flex gap-2"> <!-- Flexbox pour aligner les boutons -->
+                                            <a href="#" class="btn btn-warning btn-sm btn-edit-livraison" data-id="{{ livraison.id }}">
+                                                <i class="fas fa-edit text-white"></i> Modifier
+                                            </a>
+                                            <a href="{% url 'supprimer_livraison' livraison.id %}" class="btn btn-danger btn-sm"
+                                               onclick="return confirm('Voulez-vous vraiment supprimer cette livraison ?');">
+                                                <i class="fas fa-trash text-white"></i> Supprimer
+                                            </a>
+                                            <a href="#" class="btn btn-success btn-sm" onclick="afficherIframe('{{ selected_date }}', '{{ camion.id }}')">
+                                                <i class="fas fa-plus text-white"></i> Ajouter
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr id="camion-{{ camion.id }}">
+                                <td>{{ selected_date_obj|date:"j F Y" }}</td>
+                                <td>{{ camion.numero }}</td>
+                                <td>{{ camion.telephone }}</td>
+                                <td colspan="6" class="text-center">Aucune livraison</td>
+                                <td>{{ statuts_camions|get_item:camion.id|default:"En attente" }}</td>
+                                <td>
+                                    <div class="d-flex gap-2"> <!-- Flexbox pour aligner les boutons -->
+                                        <a href="#" class="btn btn-success btn-sm" onclick="afficherIframe('{{ selected_date }}', '{{ camion.id }}')">
+                                            <i class="fas fa-plus text-white"></i> Ajouter
+                                        </a>
+                                        <iframe id="livraisonIframe" src="" style="display: none; width: 100%; height: 500px; border: none;"></iframe>
+                                        {% if camion.id %}
+                                            <a href="{% url 'modifier_statut_camion' camion.id %}" class="btn btn-info btn-sm">
+                                                <i class="fas fa-edit text-white"></i> Statut
+                                            </a>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endif %}
+                    {% endwith %}
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="modalEditLivraison" tabindex="-1" aria-labelledby="modalEditLivraisonLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalEditLivraisonLabel"><i class="fas fa-edit text-primary"></i> Modifier Livraison</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="modalEditContent">
+                <!-- Le formulaire va être chargé ici -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+$(document).ready(function() {
+    $(".btn-edit-livraison").click(function(event) {
+        event.preventDefault(); // Empêche le rechargement de la page
+
+        var livraisonId = $(this).data("id");
+
+        $.ajax({
+            url: "/modifier/" + livraisonId + "/",
+            type: "GET",
+            headers: { "X-Requested-With": "XMLHttpRequest" },
+            success: function(response) {
+                $("#modalEditContent").html(response.html);
+                $("#modalEditLivraison").modal("show");
+            },
+            error: function(xhr, status, error) {
+                console.log("Erreur AJAX: ", xhr.responseText);
+            }
+        });
+    });
+
+    // Gestion de la soumission du formulaire en AJAX
+    $(document).on("submit", "#editLivraisonForm", function(event) {
+        event.preventDefault(); // Empêche le rechargement de la page
+
+        var form = $(this);
+        var url = form.attr("action"); // Vérifie si l'action est bien définie
+
+        $.ajax({
+            url: url,
+            type: "POST",
+            data: form.serialize(), // Sérialise les données du formulaire
+            headers: { "X-Requested-With": "XMLHttpRequest" },
+            success: function(response) {
+                console.log("Réponse AJAX (POST) : ", response);
+                if (response.success) {
+                    $("#modalEditLivraison").modal("hide");
+                    location.reload(); // Recharge la page pour voir les modifications
+                } else {
+                    $("#modalEditContent").html(response.html); // Recharge le formulaire en cas d'erreur
+                }
+            },
+            error: function(xhr, status, error) {
+                console.log("Erreur lors de la modification: ", xhr.responseText);
+            }
+        });
+    });
+});
+</script>
+
+<script>
+function afficherIframe(date, camionId) {
+    // Créer un iframe
+    var iframe = document.createElement('iframe');
+    iframe.src = "{% url 'ajouter_livraison' %}?date=" + date + "&camion=" + camionId;
+    iframe.style.width = '900%';
+    iframe.style.height = '250px';
+    iframe.style.border = 'none';
+    iframe.style.display = 'block'; // Affiche l'iframe
+
+    // Trouver la ligne du camion concerné
+    var camionRow = document.getElementById('camion-' + camionId);
+
+    // Insérer l'iframe en dessous de la ligne du camion
+    if (camionRow) {
+        camionRow.insertAdjacentElement('afterend', iframe);
+    } else {
+        console.error("La ligne du camion n'a pas été trouvée.");
+    }
+}
+</script>
+{% endblock %}

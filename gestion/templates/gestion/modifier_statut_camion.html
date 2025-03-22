@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Modifier Statut du Camion</title>
+</head>
+<body>
+    <h1>Modifier le statut du camion {{ camion.numero }}</h1>
+    <form method="post">
+        {% csrf_token %}
+        <label for="statut">Statut :</label>
+        <select name="statut" id="statut">
+            <option value="attente">Attente</option>
+            <option value="panne">Panne</option>
+            <option value="off">Off</option>
+        </select>
+        <button type="submit">Enregistrer</button>
+    </form>
+</body>
+</html>

@@ -1,0 +1,60 @@
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+<p><strong>Camion :</strong> {{ camion.numero }}</p>
+<p><strong>Date :</strong> {{ selected_date|date:"j F Y" }}</p>
+
+<form method="POST" class="inline-form">
+    {% csrf_token %}
+
+    <div class="form-fields">
+        {% for field in form %}
+            <div class="form-field">
+                <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {{ field }}
+                {% if field.errors %}
+                    <div class="error">
+                        {{ field.errors }}
+                    </div>
+                {% endif %}
+            </div>
+        {% endfor %}
+    </div><br>
+
+    <div class="form-field">
+        <button type="submit" class="btn btn-primary">Enregistrer</button>
+        <button type="button" class="btn btn-secondary" onclick="fermerIframe()">Fermer</button>
+    </div>
+</form>
+
+<style>
+    .inline-form .form-fields {
+        display: flex;
+        flex-wrap: nowrap;
+        gap: 10px;
+        align-items: center;
+    }
+
+    .inline-form .form-field {
+        flex: 1;
+        margin-bottom: 0;
+    }
+
+    .inline-form label {
+        display: block;
+        margin-bottom: 5px;
+    }
+
+    .inline-form .error {
+        color: red;
+        font-size: 0.9em;
+    }
+</style>
+
+<script>
+function fermerIframe() {
+    // Fermer l'iframe en le supprimant du DOM
+    var iframe = window.frameElement;
+    if (iframe) {
+        iframe.remove(); // Supprime l'iframe
+    }
+}
+</script>
