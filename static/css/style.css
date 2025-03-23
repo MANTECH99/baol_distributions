@@ -256,7 +256,7 @@ body{
 
     .container {
         width: 95%;
-        max-width: 550px; /* Augmente la largeur du formulaire */
+        max-width: 600px; /* Augmente la largeur du formulaire */
         min-height: 90vh;
         border-radius: 15px;
         padding: 25px;
@@ -277,7 +277,7 @@ body{
 
     .sign-in, .sign-up {
         width: 100%;
-        max-width: 450px; /* Augmente la largeur du formulaire */
+        max-width: 500px; /* Augmente la largeur du formulaire */
         position: absolute;
         top: 50%;
         left: 50%;
@@ -296,8 +296,8 @@ body{
     }
 
     .input-container input {
-        font-size: 20px; /* Augmente la taille du texte */
-        padding: 18px; /* Augmente l'espacement */
+        font-size: 26px; /* Augmente la taille du texte */
+        padding: 24px; /* Augmente l'espacement */
         width: 100%;
         border-radius: 8px;
     }
@@ -305,7 +305,7 @@ body{
     .container button {
         width: 100%;
         padding: 14px;
-        font-size: 20px; /* Augmente la taille du bouton */
+        font-size: 25px; /* Augmente la taille du bouton */
         border-radius: 8px;
     }
 
