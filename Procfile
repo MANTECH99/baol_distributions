@@ -1,1 +1,1 @@
-web: gunicorn baols_distributions.wsgi --log-file -
+web: gunicorn baol_distributions.wsgi --log-file -
