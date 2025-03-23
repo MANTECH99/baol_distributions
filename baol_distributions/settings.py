@@ -55,6 +55,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',  # Ajout Whitenoise
+        'django.middleware.csrf.CsrfViewMiddleware',  # Assure-toi qu'il est bien là
 ]
 
 ROOT_URLCONF = 'baol_distributions.urls'
@@ -136,5 +137,8 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 LOGIN_REDIRECT_URL = '/dashboard/'  # Redirige après connexion
 LOGOUT_REDIRECT_URL = '/'  # Redirige après déconnexion
+
+CSRF_TRUSTED_ORIGINS = ['https://web-production-fff9c.up.railway.app']
+
 
 
