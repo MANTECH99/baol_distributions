@@ -256,7 +256,7 @@ body{
 
     .container {
         width: 90%; /* Prend presque toute la largeur */
-        max-width: 1500px; /* Augmenté encore */
+        max-width: 1300px; /* Augmenté encore */
         min-height: 90vh;
         border-radius: 15px;
         padding: 40px; /* Plus d'espace intérieur */
@@ -277,7 +277,7 @@ body{
 
     .sign-in, .sign-up {
         width: 100%;
-        max-width: 1500px; /* Encore plus large */
+        max-width: 1300px; /* Encore plus large */
         position: absolute;
         top: 50%;
         left: 50%;
