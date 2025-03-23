@@ -241,65 +241,81 @@ body{
 
 
 /* Ajoutez ces styles à la fin de votre fichier styles.css */
-/* Ajout des styles responsive */
 @media screen and (max-width: 768px) {
     .container {
         width: 90%;
-        min-height: 500px;
+        min-height: auto;
+        padding: 20px;
     }
 
     .form-container {
         width: 100%;
         position: relative;
+        transform: none !important;
+        opacity: 1 !important;
+        z-index: 5 !important;
     }
 
     .toggle-container {
         display: none;
     }
 
-    .sign-in, .sign-up {
+    .sign-in,
+    .sign-up {
         width: 100%;
-        position: relative;
-        opacity: 1;
-        z-index: 5;
-        transform: none;
+        left: 0;
+    }
+
+    .container button {
+        width: 100%;
+        padding: 12px;
+    }
+
+    .social-icons {
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+    }
+
+    .input-container input {
+        font-size: 14px;
+        padding: 10px 10px 10px 35px;
+    }
+
+    .input-container i {
+        left: 8px;
     }
 }
 
 @media screen and (max-width: 480px) {
     .container {
-        width: 100%;
-        min-height: auto;
-        border-radius: 0;
-        box-shadow: none;
+        width: 95%;
+        border-radius: 15px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
     }
 
-    .container form {
-        padding: 20px;
+    .container h1 {
+        font-size: 20px;
     }
 
-    .input-container input {
-        padding: 12px;
-        font-size: 14px;
+    .container p {
+        font-size: 12px;
+        margin: 10px 0;
     }
 
     .container button {
-        padding: 12px 30px;
-        font-size: 14px;
+        font-size: 12px;
+        padding: 10px;
+    }
+
+    .input-container input {
+        font-size: 13px;
+        padding: 10px 10px 10px 30px;
     }
 
     .social-icons a {
         width: 35px;
         height: 35px;
+        font-size: 14px;
     }
 }
-
-@media (max-width: 768px) {
-    #login-form {
-        display: block !important;
-    }
-    #register-form {
-        display: none !important;
-    }
-}
-
