@@ -296,7 +296,7 @@ def dashboard(request):
         'total_tonnage': total_tonnage,
         'total_montant': total_montant,
         'total_livraisons': total_livraisons,
-        'mois_labels': json.dumps(mois_labels),  # Inverser pour avoir les plus récents à droite
+'mois_labels': json.dumps(mois_labels[::-1]),
         'tonnage_values': json.dumps(tonnage_values[::-1]),
         'montant_values': json.dumps(montant_values[::-1]),
         'livraisons_mois': livraisons_mois,
