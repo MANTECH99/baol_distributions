@@ -256,7 +256,7 @@ body{
 
     .container {
         width: 90%; /* Prend presque toute la largeur */
-        max-width: 1300px; /* Augmenté encore */
+        max-width: 700px; /* Augmenté encore */
         min-height: 90vh;
         border-radius: 15px;
         padding: 40px; /* Plus d'espace intérieur */
@@ -277,7 +277,7 @@ body{
 
     .sign-in, .sign-up {
         width: 100%;
-        max-width: 1300px; /* Encore plus large */
+        max-width: 600px; /* Encore plus large */
         position: absolute;
         top: 50%;
         left: 50%;
@@ -296,8 +296,8 @@ body{
     }
 
     .input-container input {
-        font-size: 50px; /* Texte encore plus grand */
-        padding: 58px; /* Espacement augmenté */
+        font-size: 20px; /* Texte encore plus grand */
+        padding: 18px; /* Espacement augmenté */
         width: 100%;
         border-radius: 12px;
     }
@@ -305,7 +305,7 @@ body{
     .container button {
         width: 100%;
         padding: 18px;
-        font-size: 15px; /* Bouton encore plus grand */
+        font-size: 20px; /* Bouton encore plus grand */
         border-radius: 12px;
     }
 
@@ -354,3 +354,4 @@ body{
         font-size: 18px;
     }
 }
+
