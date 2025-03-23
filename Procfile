@@ -1,1 +1,1 @@
-web: gunicorn baol_distributions.wsgi --bind 0.0.0.0:$PORT
+release: bash -c "until python manage.py migrate; do sleep 5; done && python manage.py createsuperuser --noinput || true"
