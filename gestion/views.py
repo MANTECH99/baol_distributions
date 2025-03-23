@@ -65,48 +65,71 @@ def ajouter_livraison(request):
         })
 
 
+from django.shortcuts import render
+from datetime import date, datetime
+from .models import Livraison, Camion, StatutCamion
+
 def liste_livraisons(request):
-    # Récupérer le type de filtre (date ou mois)
+    # Récupérer les paramètres de filtre
     filter_type = request.GET.get('filter_type')
-    # Définir des valeurs par défaut pour selected_date et selected_month
     selected_date = request.GET.get('date', date.today().strftime('%Y-%m-%d'))  # Date par défaut : aujourd'hui
     selected_month = request.GET.get('month', date.today().strftime('%Y-%m'))  # Mois par défaut : ce mois
+    selected_camion_id = request.GET.get('camion')
 
+    # Initialiser les variables
+    selected_date_obj = None
+    livraisons = Livraison.objects.all()
 
+    # Appliquer le filtre par date ou mois
     if filter_type == 'date':
         # Filtrer par date personnalisée
-        selected_date = request.GET.get('date', date.today().strftime('%Y-%m-%d'))
-        selected_date_obj = datetime.strptime(selected_date, "%Y-%m-%d").date()
-        livraisons = Livraison.objects.filter(date=selected_date_obj).order_by('-date')
+        try:
+            selected_date_obj = datetime.strptime(selected_date, "%Y-%m-%d").date()
+            livraisons = livraisons.filter(date=selected_date_obj)
+        except ValueError:
+            # En cas d'erreur de format de date, on affiche les livraisons du jour
+            selected_date_obj = date.today()
+            livraisons = livraisons.filter(date=selected_date_obj)
         selected_month = None
     elif filter_type == 'month':
         # Filtrer par mois spécifique
-        selected_month = request.GET.get('month', date.today().strftime('%Y-%m'))
-        year, month = map(int, selected_month.split('-'))
-        livraisons = Livraison.objects.filter(date__year=year, date__month=month).order_by('-date')
+        try:
+            year, month = map(int, selected_month.split('-'))
+            selected_date_obj = date(year, month, 1)
+            livraisons = livraisons.filter(date__year=year, date__month=month)
+        except ValueError:
+            # En cas d'erreur de format de mois, on affiche les livraisons du jour
+            selected_date_obj = date.today()
+            livraisons = livraisons.filter(date=selected_date_obj)
         selected_date = None
-        # Pour les camions sans livraison, on utilise le premier jour du mois sélectionné
-        selected_date_obj = date(year, month, 1)
     else:
         # Par défaut, afficher les livraisons du jour
         selected_date = date.today().strftime('%Y-%m-%d')
         selected_date_obj = date.today()
-        livraisons = Livraison.objects.filter(date=selected_date_obj).order_by('-date')
+        livraisons = livraisons.filter(date=selected_date_obj)
         selected_month = None
+
+    # Appliquer le filtre par camion si un camion est sélectionné
+    if selected_camion_id and selected_camion_id != "None":  # Vérifier que selected_camion_id n'est pas "None"
+        livraisons = livraisons.filter(camion_id=selected_camion_id)
+
+    # Trier les livraisons par date
+    livraisons = livraisons.order_by('-date')
 
     # Récupérer tous les camions
     camions = Camion.objects.all()
 
-    # Associer chaque camion à toutes ses livraisons du jour ou du mois
+    # Organiser les livraisons par camion
     livraisons_par_camion = {}
     for livraison in livraisons:
         if livraison.camion.id not in livraisons_par_camion:
             livraisons_par_camion[livraison.camion.id] = []
         livraisons_par_camion[livraison.camion.id].append(livraison)
 
-    # Récupérer les statuts des camions sans livraison
+    # Récupérer les statuts des camions
     statuts_camions = {statut.camion.id: statut for statut in StatutCamion.objects.all()}
 
+    # Préparer le contexte pour le template
     context = {
         'livraisons': livraisons,
         'camions': camions,
@@ -114,8 +137,9 @@ def liste_livraisons(request):
         'statuts_camions': statuts_camions,
         'selected_date': selected_date,
         'selected_month': selected_month,
-        'selected_date_obj': selected_date_obj,  # Toujours inclure selected_date_obj
-        'filter_type': filter_type,  # Passer le type de filtre au template
+        'selected_camion_id': selected_camion_id,
+        'selected_date_obj': selected_date_obj,
+        'filter_type': filter_type,
     }
 
     return render(request, 'gestion/livraisons.html', context)
@@ -296,7 +320,7 @@ def dashboard(request):
         'total_tonnage': total_tonnage,
         'total_montant': total_montant,
         'total_livraisons': total_livraisons,
-'mois_labels': json.dumps(mois_labels[::-1]),
+        'mois_labels': json.dumps(mois_labels[::-1]),
         'tonnage_values': json.dumps(tonnage_values[::-1]),
         'montant_values': json.dumps(montant_values[::-1]),
         'livraisons_mois': livraisons_mois,
@@ -309,36 +333,51 @@ def dashboard(request):
 
 
 logger = logging.getLogger(__name__)
+from django.http import HttpResponse
+from openpyxl import Workbook
+from datetime import datetime
+from .models import Livraison
+import logging
+
+logger = logging.getLogger(__name__)
 
 def exporter_livraisons_excel(request):
     # Récupérer les paramètres de filtre
     filter_type = request.GET.get('filter_type')
     selected_date = request.GET.get('date')
     selected_month = request.GET.get('month')
+    selected_camion_id = request.GET.get('camion')  # Récupérer l'ID du camion
 
-    logger.info(f"Filter type: {filter_type}, Date: {selected_date}, Month: {selected_month}")
+    logger.info(f"Filter type: {filter_type}, Date: {selected_date}, Month: {selected_month}, Camion: {selected_camion_id}")
 
-    # Filtrer les livraisons en fonction du filtre sélectionné
+    # Filtrer les livraisons en fonction des filtres sélectionnés
+    livraisons = Livraison.objects.all()
+
+    # Appliquer le filtre par camion si un camion est sélectionné
+    if selected_camion_id:
+        livraisons = livraisons.filter(camion_id=selected_camion_id)
+        logger.info(f"Filtrage par camion ({selected_camion_id}): {livraisons.count()} livraisons")
+
+    # Appliquer le filtre par date ou mois
     if filter_type == 'date' and selected_date:
         try:
             selected_date_obj = datetime.strptime(selected_date, "%Y-%m-%d").date()
-            livraisons = Livraison.objects.filter(date=selected_date_obj).order_by('-date')
-            logger.info(f"Livraisons filtrées par date ({selected_date_obj}): {livraisons.count()}")
+            livraisons = livraisons.filter(date=selected_date_obj)
+            logger.info(f"Filtrage par date ({selected_date_obj}): {livraisons.count()} livraisons")
         except ValueError:
             logger.error("Format de date invalide")
             livraisons = Livraison.objects.none()
     elif filter_type == 'month' and selected_month:
         try:
             year, month = map(int, selected_month.split('-'))
-            livraisons = Livraison.objects.filter(date__year=year, date__month=month).order_by('-date')
-            logger.info(f"Livraisons filtrées par mois ({year}-{month}): {livraisons.count()}")
+            livraisons = livraisons.filter(date__year=year, date__month=month)
+            logger.info(f"Filtrage par mois ({year}-{month}): {livraisons.count()} livraisons")
         except ValueError:
             logger.error("Format de mois invalide")
             livraisons = Livraison.objects.none()
-    else:
-        # Par défaut, exporter toutes les livraisons
-        livraisons = Livraison.objects.all().order_by('-date')
-        logger.info(f"Toutes les livraisons: {livraisons.count()}")
+
+    # Trier les livraisons par date
+    livraisons = livraisons.order_by('-date')
 
     # Créer un nouveau classeur Excel
     wb = Workbook()
@@ -368,7 +407,7 @@ def exporter_livraisons_excel(request):
 
     # Créer une réponse HTTP avec le fichier Excel
     response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-    response['Content-Disposition'] = 'attachment; filename=livraisons.xlsx'
+    response['Content-Disposition'] = f'attachment; filename=livraisons_{selected_camion_id or "all"}_{selected_date or selected_month or "all"}.xlsx'
     wb.save(response)
 
     return response
