@@ -31,6 +31,8 @@ SECRET_KEY = 'django-insecure-xxaoowwd6x8s1h1)zc$!t@gf$=)))nu#g!3j-4c&y^28zlf7nl
 DEBUG = True
 
 ALLOWED_HOSTS = ['baol-distributions.up.railway.app', '127.0.0.1', 'localhost']
+CSRF_TRUSTED_ORIGINS = ["https://baol-distributions.up.railway.app"]
+
 
 
 
