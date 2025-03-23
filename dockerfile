@@ -24,7 +24,7 @@ RUN . /opt/venv/bin/activate && python manage.py migrate
 RUN . /opt/venv/bin/activate && \
     echo "from django.contrib.auth import get_user_model; \
     User = get_user_model(); \
-    User.objects.create_superuser('admin', 'admin@example.com', 'password') \
+    User.objects.create_superuser('admin', 'dimariaagueye100@gmail.com', 'Mantech772607977') \
     if not User.objects.filter(username='admin').exists() else None" \
     | python manage.py shell
 
