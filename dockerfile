@@ -8,11 +8,14 @@ RUN apt-get update && apt-get install -y \
     build-essential \
     && rm -rf /var/lib/apt/lists/*
 
-# Configurer l'environnement virtuel et installer les dépendances Python
-COPY requirements.txt .
+# Copier les fichiers nécessaires
+COPY requirements.txt . 
+
+# Configurer l'environnement virtuel et installer les dépendances
 RUN python -m venv /opt/venv && . /opt/venv/bin/activate && pip install -r requirements.txt
 
 # Copier le reste de l'application
 COPY . .
 
-CMD ["gunicorn", "--bind", "0.0.0.0:8000", "baol_distributions.wsgi:application"]
+# Appliquer les migrations au démarrage
+CMD ["/bin/sh", "-c", ". /opt/venv/bin/activate && python manage.py migrate && python create_superuser.py && gunicorn --bind 0.0.0.0:8000 baol_distributions.wsgi:application"]
