@@ -85,20 +85,14 @@ TEMPLATES = [
 WSGI_APPLICATION = 'baol_distributions.wsgi.application'
 
 import os
-import pymysql  # Assurez-vous que pymysql est bien installé
+import dj_database_url
 
-pymysql.install_as_MySQLdb()
-
-DATABASES = { 
- 'default': { 
- 'ENGINE': 'django.db.backends.mysql', 
- 'NAME': 'railway', 
- 'USER': 'root', 
- 'PASSWORD': 'BztDqOOnNGjXZQrQbprcGWopYraiarKz', 
- 'HOST': 'ballast.proxy.rlwy.net', 
- 'PORT': '17270'
-} 
+DATABASES = {
+    'default': dj_database_url.config(
+        default=os.getenv("MYSQL_URL", "mysql://root:BztDqOOnNGjXZQrQbprcGWopYraiarKz@mysql.railway.internal:3306/railway")
+    )
 }
+
 
 
 # Password validation
