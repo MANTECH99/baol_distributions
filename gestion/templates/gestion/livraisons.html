@@ -5,51 +5,70 @@
 {% block content %}
 <div class="container mt-5">
     <h2><i class="fas fa-list text-primary"></i> Liste des Livraisons</h2><br>
+<!-- Formulaire de sélection du camion -->
+<!-- Formulaire de sélection du camion -->
+<div class="mb-3">
+    <label for="camion_filter"><i class="fas fa-truck text-primary"></i> Filtrer par camion :</label>
+    <form method="GET" class="d-inline-block">
+        <input type="hidden" name="filter_type" value="{{ filter_type }}">
+        <input type="hidden" name="date" value="{{ selected_date }}">
+        <input type="hidden" name="month" value="{{ selected_month }}">
+        <select id="camion_filter" name="camion" class="form-control d-inline-block w-auto" onchange="this.form.submit()">
+            <option value="">Tous les camions</option>
+            {% for camion in camions %}
+                <option value="{{ camion.id }}" {% if selected_camion_id == camion.id|stringformat:"s" %}selected{% endif %}>
+                    {{ camion.numero }}
+                </option>
+            {% endfor %}
+        </select>
+    </form>
+</div>
 
-    <!-- Étape 1 : Choix du type de filtre -->
-    <div class="mb-3">
-        <label for="filter_type"><i class="fas fa-filter text-secondary"></i> Choisir le type de filtre :</label>
-        <select id="filter_type" name="filter_type" class="form-control d-inline-block w-auto" onchange="showFilterForm()">
-            <option value="">-- Sélectionnez un filtre --</option>
-            <option value="date" {% if filter_type == 'date' %}selected{% endif %}>Date personnalisée</option>
-            <option value="month" {% if filter_type == 'month' %}selected{% endif %}>Mois spécifique</option>
-        </select>&nbsp;&nbsp;&nbsp;
+<!-- Étape 1 : Choix du type de filtre -->
+<div class="mb-3">
+    <label for="filter_type"><i class="fas fa-filter text-secondary"></i> Choisir le type de filtre :</label>
+    <select id="filter_type" name="filter_type" class="form-control d-inline-block w-auto" onchange="showFilterForm()">
+        <option value="">-- Sélectionnez un filtre --</option>
+        <option value="date" {% if filter_type == 'date' %}selected{% endif %}>Date personnalisée</option>
+        <option value="month" {% if filter_type == 'month' %}selected{% endif %}>Mois spécifique</option>
+    </select>&nbsp;&nbsp;&nbsp;
 
-            <a href="{% url 'exporter_livraisons_excel' %}?filter_type={{ filter_type }}&date={{ selected_date }}&month={{ selected_month }}"
-           class="btn btn-success">
-            <i class="fas fa-file-excel text-white"></i> Exporter en Excel
-        </a>
-    </div>
+<a href="{% url 'exporter_livraisons_excel' %}?filter_type={{ filter_type }}&date={{ selected_date }}&month={{ selected_month }}&camion={{ selected_camion_id|default:'' }}"
+   class="btn btn-success">
+    <i class="fas fa-file-excel text-white"></i> Exporter en Excel
+</a>
+</div>
 
-    <!-- Étape 2 : Formulaire pour la date personnalisée -->
-    <div id="date_form" style="display: {% if filter_type == 'date' %}block{% else %}none{% endif %};">
-        <form method="GET" class="mb-3">
-            <input type="hidden" name="filter_type" value="date">
-            <label for="date"><i class="fas fa-calendar-day text-info"></i> Sélectionner une date :</label>
-            <input type="date" id="date" name="date" value="{{ selected_date|default:'' }}" class="form-control d-inline-block w-auto">
-            <button type="submit" class="btn btn-primary"><i class="fas fa-filter text-white"></i> Filtrer</button>
-        </form>
-    </div>
-
-    <!-- Étape 2 : Formulaire pour le mois spécifique -->
-    <div id="month_form" style="display: {% if filter_type == 'month' %}block{% else %}none{% endif %};">
-        <form method="GET" class="mb-3">
-            <input type="hidden" name="filter_type" value="month">
-            <label for="month"><i class="fas fa-calendar-alt text-warning"></i> Sélectionner un mois :</label>
-            <input type="month" id="month" name="month" value="{{ selected_month|default:'' }}" class="form-control d-inline-block w-auto">
-            <button type="submit" class="btn btn-primary"><i class="fas fa-filter text-white"></i> Filtrer</button>
-        </form>
-    </div>
-
-    <!-- Script JavaScript pour afficher le formulaire correspondant -->
-    <script>
-        function showFilterForm() {
-            const filterType = document.getElementById('filter_type').value;
-            document.getElementById('date_form').style.display = filterType === 'date' ? 'block' : 'none';
-            document.getElementById('month_form').style.display = filterType === 'month' ? 'block' : 'none';
-        }
-    </script>
-
+<!-- Étape 2 : Formulaire pour la date personnalisée -->
+<div id="date_form" style="display: {% if filter_type == 'date' %}block{% else %}none{% endif %};">
+    <form method="GET" class="mb-3">
+        <input type="hidden" name="filter_type" value="date">
+        <input type="hidden" name="camion" value="{{ selected_camion_id|default:'' }}">
+        <input type="hidden" name="month" value="{{ selected_month }}">
+        <label for="date"><i class="fas fa-calendar-day text-info"></i> Sélectionner une date :</label>
+        <input type="date" id="date" name="date" value="{{ selected_date|default:'' }}" class="form-control d-inline-block w-auto">
+        <button type="submit" class="btn btn-primary"><i class="fas fa-filter text-white"></i> Filtrer</button>
+    </form>
+</div>
+<!-- Étape 2 : Formulaire pour le mois spécifique -->
+<div id="month_form" style="display: {% if filter_type == 'month' %}block{% else %}none{% endif %};">
+    <form method="GET" class="mb-3">
+        <input type="hidden" name="filter_type" value="month">
+        <input type="hidden" name="camion" value="{{ selected_camion_id|default:'' }}">
+        <input type="hidden" name="date" value="{{ selected_date }}">
+        <label for="month"><i class="fas fa-calendar-alt text-warning"></i> Sélectionner un mois :</label>
+        <input type="month" id="month" name="month" value="{{ selected_month|default:'' }}" class="form-control d-inline-block w-auto">
+        <button type="submit" class="btn btn-primary"><i class="fas fa-filter text-white"></i> Filtrer</button>
+    </form>
+</div>
+<!-- Script JavaScript pour afficher le formulaire correspondant -->
+<script>
+    function showFilterForm() {
+        const filterType = document.getElementById('filter_type').value;
+        document.getElementById('date_form').style.display = filterType === 'date' ? 'block' : 'none';
+        document.getElementById('month_form').style.display = filterType === 'month' ? 'block' : 'none';
+    }
+</script>
     <div class="table-responsive"> <!-- Conteneur responsive pour le tableau -->
         <table class="table table-striped">
             <thead class="table-green">
