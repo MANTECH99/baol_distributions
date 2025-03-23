@@ -255,11 +255,11 @@ body{
     }
 
     .container {
-        width: 95%;
+        width: 100%;
         max-width: 1000px; /* Augmente la largeur du formulaire */
         min-height: 90vh;
         border-radius: 15px;
-        padding: 25px;
+        padding: 40px;
         box-shadow: none;
         display: flex;
         flex-direction: column;
