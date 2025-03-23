@@ -1,22 +1,31 @@
-# Utiliser une image Python
-FROM python:3.12
+# Utiliser une image Python optimisée
+FROM python:3.12-slim
 
 # Définir le répertoire de travail
 WORKDIR /app
 
 # Installer les dépendances système
 RUN apt-get update && apt-get install -y \
-    default-libmysqlclient-dev gcc
+    default-libmysqlclient-dev gcc \
+    && rm -rf /var/lib/apt/lists/*  # Nettoyer pour réduire la taille de l'image
 
-# Copier les fichiers et installer les dépendances Python
-COPY requirements.txt .
-RUN python -m venv /opt/venv && . /opt/venv/bin/activate && pip install --no-cache-dir -r requirements.txt
+# Créer un utilisateur non-root
+RUN useradd -m appuser
+USER appuser
+
+# Copier uniquement requirements.txt pour optimiser le cache
+COPY --chown=appuser:appuser requirements.txt .  
+
+# Créer un environnement virtuel et installer les dépendances
+RUN python -m venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
+RUN pip install --no-cache-dir -r requirements.txt
 
 # Copier le reste du projet
-COPY . .
+COPY --chown=appuser:appuser . .
 
 # Exposer le port
 EXPOSE 8000
 
-# Commande de démarrage
-CMD ["gunicorn", "--bind", "0.0.0.0:8000", "baol_distributions.wsgi:application"]
+# Lancer Gunicorn
+ENTRYPOINT ["gunicorn", "--bind", "0.0.0.0:8000", "baol_distributions.wsgi:application"]
