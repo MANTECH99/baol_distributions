@@ -293,3 +293,13 @@ body{
         height: 35px;
     }
 }
+
+@media (max-width: 768px) {
+    #login-form {
+        display: block !important;
+    }
+    #register-form {
+        display: none !important;
+    }
+}
+
