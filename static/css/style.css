@@ -241,111 +241,110 @@ body{
 
 
 /* Ajoutez ces styles à la fin de votre fichier styles.css */
+/* RESPONSIVE DESIGN */
 
-/* Pour les écrans de moins de 768px */
-@media (max-width: 768px) {
+/* Pour les écrans de 768px et moins (tablettes et mobiles) */
+@media screen and (max-width: 768px) {
+    body {
+        padding: 20px;
+        height: auto;
+    }
+
     .container {
-        width: 90%;
-        min-height: 400px;
+        width: 100%;
+        min-height: auto;
+        border-radius: 15px;
+        padding: 20px;
+        box-shadow: none;
     }
 
     .form-container {
         width: 100%;
-        padding: 0 20px;
+        position: relative;
     }
 
     .sign-in, .sign-up {
         width: 100%;
-        left: 0;
-    }
-
-    .container.active .sign-in {
-        transform: translateX(100%);
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        transition: all 0.5s ease-in-out; /* Animation intacte */
     }
 
     .container.active .sign-up {
-        transform: translateX(100%);
+        transform: translateX(0);
         opacity: 1;
         z-index: 5;
+        animation: fadeIn 0.5s ease-in-out; /* Animation conservée */
     }
 
     .toggle-container {
-        display: none; /* Cache le toggle-container sur les petits écrans */
+        display: none; /* Cache uniquement le bloc toggle sur mobile */
     }
 
-    .container.active .toggle-container {
-        transform: translateX(0);
+    .input-container input {
+        font-size: 14px;
+        padding: 12px;
     }
 
-    .toggle {
-        display: none; /* Cache le toggle sur les petits écrans */
-    }
-
-    .container.active .toggle {
-        transform: translateX(0);
-    }
-
-    .toggle-panel {
+    .container button {
         width: 100%;
-        padding: 0 20px;
+        padding: 12px;
+        font-size: 14px;
     }
 
-    .toggle-left, .toggle-right {
-        transform: translateX(0);
-    }
-
-    .container.active .toggle-left {
-        transform: translateX(0);
-    }
-
-    .container.active .toggle-right {
-        transform: translateX(0);
+    .logo {
+        max-width: 60px;
     }
 
     .social-icons {
-        margin: 10px 0;
+        display: flex;
+        justify-content: center;
+        gap: 10px;
     }
 
     .social-icons a {
         width: 35px;
         height: 35px;
-    }
-
-    .input-container input {
-        padding: 10px 10px 10px 35px;
-    }
-
-    .input-container i {
         font-size: 14px;
     }
 }
 
-/* Pour les écrans de moins de 480px */
-@media (max-width: 480px) {
+/* Pour les écrans très petits (max 480px - téléphones) */
+@media screen and (max-width: 480px) {
     .container {
-        min-height: 300px;
+        padding: 15px;
+        border-radius: 10px;
     }
 
-    .container button {
-        padding: 8px 30px;
-        font-size: 11px;
+    h1 {
+        font-size: 18px;
     }
 
-    .container input {
-        padding: 8px 12px;
+    .container p {
         font-size: 12px;
+        text-align: center;
     }
 
     .input-container input {
-        padding: 8px 8px 8px 30px;
-    }
-
-    .input-container i {
+        padding: 10px;
         font-size: 12px;
     }
 
-    .social-icons a {
-        width: 30px;
-        height: 30px;
+    .container button {
+        padding: 10px;
+        font-size: 12px;
+    }
+}
+
+/* Animation fadeIn conservée */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateX(-100%);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
     }
 }
