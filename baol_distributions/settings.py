@@ -83,7 +83,8 @@ import dj_database_url
 
 DATABASES = {
     'default': dj_database_url.config(
-        default=os.getenv('DATABASE_URL', mysql://root:BztDqOOnNGjXZQrQbprcGWopYraiarKz@mysql.railway.internal:3306/railway)  # Railway fournira cette variable
+       default=os.getenv('DATABASE_URL', "mysql://root:BztDqOOnNGjXZQrQbprcGWopYraiarKz@mysql.railway.internal:3306/railway")
+
     )
 }
 
