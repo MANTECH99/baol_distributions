@@ -255,10 +255,11 @@ body{
     }
 
     .container {
-        width: 90%;
+        width: 95%;
+        max-width: 500px; /* Augmente la largeur du formulaire */
         min-height: 90vh;
         border-radius: 15px;
-        padding: 20px;
+        padding: 25px;
         box-shadow: none;
         display: flex;
         flex-direction: column;
@@ -276,7 +277,7 @@ body{
 
     .sign-in, .sign-up {
         width: 100%;
-        max-width: 350px; /* Limite la largeur pour éviter qu'il ne devienne trop large */
+        max-width: 400px; /* Augmente la largeur du formulaire */
         position: absolute;
         top: 50%;
         left: 50%;
@@ -295,58 +296,61 @@ body{
     }
 
     .input-container input {
-        font-size: 14px;
-        padding: 12px;
+        font-size: 16px; /* Augmente la taille du texte */
+        padding: 14px; /* Augmente l'espacement */
         width: 100%;
+        border-radius: 8px;
     }
 
     .container button {
         width: 100%;
-        padding: 12px;
-        font-size: 14px;
+        padding: 14px;
+        font-size: 16px; /* Augmente la taille du bouton */
+        border-radius: 8px;
     }
 
     .logo {
-        max-width: 60px;
+        max-width: 70px;
     }
 
     .social-icons {
         display: flex;
         justify-content: center;
-        gap: 10px;
+        gap: 12px;
     }
 
     .social-icons a {
-        width: 35px;
-        height: 35px;
-        font-size: 14px;
+        width: 40px;
+        height: 40px;
+        font-size: 16px;
     }
 }
 
 /* Pour les écrans très petits (max 480px - téléphones) */
 @media screen and (max-width: 480px) {
     .container {
-        padding: 15px;
-        border-radius: 10px;
+        padding: 20px;
+        border-radius: 12px;
         min-height: 95vh;
+        max-width: 90%;
     }
 
     h1 {
-        font-size: 18px;
+        font-size: 20px;
     }
 
     .container p {
-        font-size: 12px;
+        font-size: 14px;
         text-align: center;
     }
 
     .input-container input {
-        padding: 10px;
-        font-size: 12px;
+        padding: 12px;
+        font-size: 14px;
     }
 
     .container button {
-        padding: 10px;
-        font-size: 12px;
+        padding: 12px;
+        font-size: 14px;
     }
 }
