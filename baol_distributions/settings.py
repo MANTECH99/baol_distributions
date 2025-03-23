@@ -78,16 +78,19 @@ TEMPLATES = [
 WSGI_APPLICATION = 'baol_distributions.wsgi.application'
 
 
-import os
-import dj_database_url
-
 DATABASES = {
-    'default': dj_database_url.config(
-       default=os.getenv('DATABASE_URL', "mysql://root:BztDqOOnNGjXZQrQbprcGWopYraiarKz@mysql.railway.internal:3306/railway")
-
-    )
+    'default': {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'baol_distributions',  # Remplace par le nom de ta base de données
+        'USER': 'root',  # Remplace par ton utilisateur MySQL
+        'PASSWORD': '',  # Remplace par ton mot de passe MySQL
+        'HOST': 'localhost',  # Ou l'IP du serveur MySQL si ce n'est pas local
+        'PORT': '3306',  # Port par défaut de MySQL
+        'OPTIONS': {
+            'init_command': "SET sql_mode='STRICT_TRANS_TABLES'"
+        }
+    }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
