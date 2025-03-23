@@ -94,7 +94,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': os.getenv('railway'),
         'USER': os.getenv('root'),
-        'PASSWORD': os.getenv(''),
+        'PASSWORD': os.getenv('BztDqOOnNGjXZQrQbprcGWopYraiarKz'),
         'HOST': os.getenv('DB_HOST', 'ballast.proxy.rlwy.net'),
         'PORT': os.getenv('DB_PORT', '17270'),
         'OPTIONS': {
