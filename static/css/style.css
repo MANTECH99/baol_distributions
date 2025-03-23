@@ -243,6 +243,8 @@ body{
 /* Ajoutez ces styles à la fin de votre fichier styles.css */
 /* RESPONSIVE DESIGN */
 
+/* RESPONSIVE DESIGN */
+
 /* Pour les écrans de 768px et moins (tablettes et mobiles) */
 @media screen and (max-width: 768px) {
     body {
@@ -255,11 +257,11 @@ body{
     }
 
     .container {
-        width: 95%;
-        max-width: 500px; /* Augmente la largeur du formulaire */
+        width: 90%; /* Prend presque toute la largeur */
+        max-width: 1300px; /* Augmenté encore */
         min-height: 90vh;
         border-radius: 15px;
-        padding: 25px;
+        padding: 40px; /* Plus d'espace intérieur */
         box-shadow: none;
         display: flex;
         flex-direction: column;
@@ -277,7 +279,7 @@ body{
 
     .sign-in, .sign-up {
         width: 100%;
-        max-width: 400px; /* Augmente la largeur du formulaire */
+        max-width: 1300px; /* Encore plus large */
         position: absolute;
         top: 50%;
         left: 50%;
@@ -296,61 +298,61 @@ body{
     }
 
     .input-container input {
-        font-size: 16px; /* Augmente la taille du texte */
-        padding: 14px; /* Augmente l'espacement */
+        font-size: 50px; /* Texte encore plus grand */
+        padding: 58px; /* Espacement augmenté */
         width: 100%;
-        border-radius: 8px;
+        border-radius: 12px;
     }
 
     .container button {
-        width: 100%;
+        width: 90%;
         padding: 14px;
-        font-size: 16px; /* Augmente la taille du bouton */
-        border-radius: 8px;
+        font-size: 20px; /* Bouton encore plus grand */
+        border-radius: 10px;
     }
 
     .logo {
-        max-width: 70px;
+        max-width: 100px;
     }
 
     .social-icons {
         display: flex;
         justify-content: center;
-        gap: 12px;
+        gap: 16px;
     }
 
     .social-icons a {
-        width: 40px;
-        height: 40px;
-        font-size: 16px;
+        width: 50px;
+        height: 50px;
+        font-size: 20px;
     }
 }
 
 /* Pour les écrans très petits (max 480px - téléphones) */
 @media screen and (max-width: 480px) {
     .container {
-        padding: 20px;
-        border-radius: 12px;
-        min-height: 95vh;
-        max-width: 90%;
+        padding: 30px;
+        border-radius: 15px;
+        min-height: 90vh;
+        max-width: 95%;
     }
 
     h1 {
-        font-size: 20px;
+        font-size: 24px;
     }
 
     .container p {
-        font-size: 14px;
+        font-size: 18px;
         text-align: center;
     }
 
     .input-container input {
-        padding: 12px;
-        font-size: 14px;
+        padding: 16px;
+        font-size: 18px;
     }
 
     .container button {
-        padding: 12px;
-        font-size: 14px;
+        padding: 16px;
+        font-size: 18px;
     }
 }
