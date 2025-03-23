@@ -89,19 +89,15 @@ import pymysql  # Assurez-vous que pymysql est bien installé
 
 pymysql.install_as_MySQLdb()
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': os.getenv('railway'),
-        'USER': os.getenv('root'),
-        'PASSWORD': os.getenv('BztDqOOnNGjXZQrQbprcGWopYraiarKz'),
-        'HOST': os.getenv('DB_HOST', 'ballast.proxy.rlwy.net'),
-        'PORT': os.getenv('DB_PORT', '17270'),
-        'OPTIONS': {
-            'charset': 'utf8mb4',
-            'ssl': {'ssl-mode': 'DISABLED'}  # Désactiver SSL si nécessaire
-        }
-    }
+DATABASES = { 
+ 'default': { 
+ 'ENGINE': 'django.db.backends.mysql', 
+ 'NAME': 'railway', 
+ 'USER': 'root', 
+ 'PASSWORD': 'BztDqOOnNGjXZQrQbprcGWopYraiarKz', 
+ 'HOST': 'ballast.proxy.rlwy.net', 
+ 'PORT': '17270'
+} 
 }
 
 
