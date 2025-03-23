@@ -8,11 +8,25 @@ RUN apt-get update && apt-get install -y \
     build-essential \
     && rm -rf /var/lib/apt/lists/*
 
-# Configurer l'environnement virtuel et installer les dépendances Python
-COPY requirements.txt .
+# Copier les fichiers nécessaires
+COPY requirements.txt . 
+
+# Configurer l'environnement virtuel et installer les dépendances
 RUN python -m venv /opt/venv && . /opt/venv/bin/activate && pip install -r requirements.txt
 
 # Copier le reste de l'application
 COPY . .
 
+# Exécuter les migrations
+RUN . /opt/venv/bin/activate && python manage.py migrate
+
+# Créer le superutilisateur seulement s'il n'existe pas
+RUN . /opt/venv/bin/activate && \
+    echo "from django.contrib.auth import get_user_model; \
+    User = get_user_model(); \
+    User.objects.create_superuser('admin', 'admin@example.com', 'password') \
+    if not User.objects.filter(username='admin').exists() else None" \
+    | python manage.py shell
+
+# Lancer Gunicorn
 CMD ["gunicorn", "--bind", "0.0.0.0:8000", "baol_distributions.wsgi:application"]
