@@ -3,8 +3,10 @@ FROM python:3.12
 WORKDIR /app
 
 # Installer les dépendances système nécessaires pour mysqlclient
-apt-get update && apt-get install -y default-libmysqlclient-dev
-
+RUN apt-get update && apt-get install -y \
+    default-libmysqlclient-dev \
+    build-essential \
+    && rm -rf /var/lib/apt/lists/*
 
 # Configurer l'environnement virtuel et installer les dépendances Python
 COPY requirements.txt .
