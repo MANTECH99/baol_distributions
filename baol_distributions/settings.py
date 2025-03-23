@@ -78,18 +78,19 @@ TEMPLATES = [
 WSGI_APPLICATION = 'baol_distributions.wsgi.application'
 
 
-# Database
-# https://docs.djangoproject.com/en/5.1/ref/settings/#databases
-
-import os
-import dj_database_url
-
 DATABASES = {
-    'default': dj_database_url.config(
-        default=os.getenv('DATABASE_URL')  # Railway fournira cette variable
-    )
+    'default': {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'baol_distributions',  # Remplace par le nom de ta base de données
+        'USER': 'root',  # Remplace par ton utilisateur MySQL
+        'PASSWORD': '',  # Remplace par ton mot de passe MySQL
+        'HOST': 'localhost',  # Ou l'IP du serveur MySQL si ce n'est pas local
+        'PORT': '3306',  # Port par défaut de MySQL
+        'OPTIONS': {
+            'autocommit': True,
+        }
+    }
 }
-
 
 
 
