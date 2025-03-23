@@ -305,7 +305,7 @@ body{
     .container button {
         width: 100%;
         padding: 18px;
-        font-size: 50px; /* Bouton encore plus grand */
+        font-size: 30px; /* Bouton encore plus grand */
         border-radius: 12px;
     }
 
