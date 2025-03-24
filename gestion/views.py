@@ -389,6 +389,9 @@ def exporter_livraisons_excel(request):
         "Quantité", "Montant", "Chiffonage", "N° BL", "Statut"
     ]
     ws.append(headers)
+    # Variables pour calculer les totaux
+    total_tonnage = 0
+    total_montant = 0
 
     # Ajouter les données des livraisons
     for livraison in livraisons:
@@ -404,6 +407,17 @@ def exporter_livraisons_excel(request):
             livraison.numero_bl,
             livraison.get_statut_display(),
         ])
+        # Ajouter au total tonnage et montant
+        total_tonnage += livraison.tonnage
+        total_montant += livraison.montant
+
+
+
+    # Ajouter une ligne vide avant les totaux
+    ws.append([])
+
+    # Ajouter les totaux en bas du tableau
+    ws.append(["Total", "", "", total_tonnage, "", "", total_montant, "", "", ""])
 
     # Créer une réponse HTTP avec le fichier Excel
     response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
