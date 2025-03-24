@@ -69,30 +69,31 @@
         document.getElementById('month_form').style.display = filterType === 'month' ? 'block' : 'none';
     }
 </script>
-    <div class="table-responsive"> <!-- Conteneur responsive pour le tableau -->
-        <table class="table table-striped">
-            <thead class="table-green">
-                <tr>
-                    <th style="width: 16%;"><i class="fas fa-calendar text-info"></i> Date</th>
-                    <th style="width: 11%;"><i class="fas fa-truck text-primary"></i> Camion</th>
-                    <th style="width: 11%;"><i class="fas fa-phone text-success"></i> Téléphone</th>
-                    <th style="width: 10%;"><i class="fas fa-weight-hanging text-warning"></i> Tonnage</th>
-                    <th style="width: 8%;"><i class="fas fa-dollar-sign text-danger"></i> P U</th>
-                    <th style="width: 10%;"><i class="fas fa-box text-secondary"></i> Quantité</th>
-                    <th style="width: 11%;"><i class="fas fa-money-bill-wave text-success"></i> Montant</th>
-                    <th style="width: 12%;"><i class="fas fa-recycle text-info"></i> Chiffonage</th>
-                    <th style="width: 10%;"><i class="fas fa-barcode text-primary"></i> N° BL</th>
-                    <th style="width: 10%;"><i class="fas fa-info-circle text-warning"></i> Statut</th>
-                    <th style="width: 16%;"><i class="fas fa-cogs text-secondary"></i> Actions</th> <!-- Largeur augmentée pour la colonne Actions -->
-                </tr>
-            </thead>
-            <tbody>
-                {% for camion in camions %}
-                    {% with livraisons_par_camion|get_item:camion.id as livraisons %}
-                        {% if livraisons %}
-                            {% for livraison in livraisons %}
-                                <tr id="camion-{{ camion.id }}">
-                                    <td>{{ livraison.date|date:"j F Y" }}</td>
+<div class="table-responsive">
+    <table class="table table-striped">
+        <thead class="table-green">
+            <tr>
+                <th style="width: 16%;"><i class="fas fa-calendar text-info"></i> Date</th>
+                <th style="width: 11%;"><i class="fas fa-truck text-primary"></i> Camion</th>
+                <th style="width: 11%;"><i class="fas fa-phone text-success"></i> Téléphone</th>
+                <th style="width: 10%;"><i class="fas fa-weight-hanging text-warning"></i> Tonnage</th>
+                <th style="width: 8%;"><i class="fas fa-dollar-sign text-danger"></i> P U</th>
+                <th style="width: 10%;"><i class="fas fa-box text-secondary"></i> Quantité</th>
+                <th style="width: 11%;"><i class="fas fa-money-bill-wave text-success"></i> Montant</th>
+                <th style="width: 12%;"><i class="fas fa-recycle text-info"></i> Chiffonage</th>
+                <th style="width: 10%;"><i class="fas fa-barcode text-primary"></i> N° BL</th>
+                <th style="width: 10%;"><i class="fas fa-info-circle text-warning"></i> Statut</th>
+                <th style="width: 16%;"><i class="fas fa-cogs text-secondary"></i> Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for camion in camions %}
+                {% for day in date_range %}
+                    {% with livraisons_par_camion_et_date|get_item:camion.id|get_item:day as livraisons_du_jour %}
+                        {% if livraisons_du_jour %}
+                            {% for livraison in livraisons_du_jour %}
+                                <tr id="camion-{{ camion.id }}-date-{{ day|date:'Y-m-d' }}-{{ forloop.counter }}">
+                                    <td>{{ day|date:"j F Y" }}</td>
                                     <td>{{ camion.numero }}</td>
                                     <td>{{ camion.telephone }}</td>
                                     <td>{{ livraison.tonnage }}</td>
@@ -103,7 +104,7 @@
                                     <td>{{ livraison.numero_bl }}</td>
                                     <td>{{ livraison.get_statut_display }}</td>
                                     <td>
-                                        <div class="d-flex gap-2"> <!-- Flexbox pour aligner les boutons -->
+                                        <div class="d-flex gap-2">
                                             <a href="#" class="btn btn-warning btn-sm btn-edit-livraison" data-id="{{ livraison.id }}">
                                                 <i class="fas fa-edit text-white"></i> Modifier
                                             </a>
@@ -111,7 +112,7 @@
                                                onclick="return confirm('Voulez-vous vraiment supprimer cette livraison ?');">
                                                 <i class="fas fa-trash text-white"></i> Supprimer
                                             </a>
-                                            <a href="#" class="btn btn-success btn-sm" onclick="afficherIframe('{{ selected_date }}', '{{ camion.id }}')">
+                                            <a href="#" class="btn btn-success btn-sm" onclick="afficherIframe('{{ day|date:"Y-m-d" }}', '{{ camion.id }}')">
                                                 <i class="fas fa-plus text-white"></i> Ajouter
                                             </a>
                                         </div>
@@ -119,18 +120,17 @@
                                 </tr>
                             {% endfor %}
                         {% else %}
-                            <tr id="camion-{{ camion.id }}">
-                                <td>{{ selected_date_obj|date:"j F Y" }}</td>
+                            <tr id="camion-{{ camion.id }}-date-{{ day|date:'Y-m-d' }}">
+                                <td>{{ day|date:"j F Y" }}</td>
                                 <td>{{ camion.numero }}</td>
                                 <td>{{ camion.telephone }}</td>
                                 <td colspan="6" class="text-center">Aucune livraison</td>
                                 <td>{{ statuts_camions|get_item:camion.id|default:"En attente" }}</td>
                                 <td>
-                                    <div class="d-flex gap-2"> <!-- Flexbox pour aligner les boutons -->
-                                        <a href="#" class="btn btn-success btn-sm" onclick="afficherIframe('{{ selected_date }}', '{{ camion.id }}')">
+                                    <div class="d-flex gap-2">
+                                        <a href="#" class="btn btn-success btn-sm" onclick="afficherIframe('{{ day|date:"Y-m-d" }}', '{{ camion.id }}')">
                                             <i class="fas fa-plus text-white"></i> Ajouter
                                         </a>
-                                        <iframe id="livraisonIframe" src="" style="display: none; width: 100%; height: 500px; border: none;"></iframe>
                                         {% if camion.id %}
                                             <a href="{% url 'modifier_statut_camion' camion.id %}" class="btn btn-info btn-sm">
                                                 <i class="fas fa-edit text-white"></i> Statut
@@ -142,9 +142,10 @@
                         {% endif %}
                     {% endwith %}
                 {% endfor %}
-            </tbody>
-        </table>
-    </div>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
 </div>
 
 <!-- Modal -->
@@ -214,24 +215,46 @@ $(document).ready(function() {
 </script>
 
 <script>
+// Fonction pour afficher l'iframe
 function afficherIframe(date, camionId) {
+    // Fermer les iframes existants
+    $('iframe').remove();
+
     // Créer un iframe
     var iframe = document.createElement('iframe');
     iframe.src = "{% url 'ajouter_livraison' %}?date=" + date + "&camion=" + camionId;
-    iframe.style.width = '900%';
-    iframe.style.height = '250px';
+    iframe.style.width = '100%';
+    iframe.style.height = '300px';
     iframe.style.border = 'none';
-    iframe.style.display = 'block'; // Affiche l'iframe
+    iframe.style.margin = '10px 0';
+    iframe.id = 'iframe-' + camionId + '-' + date;
 
-    // Trouver la ligne du camion concerné
-    var camionRow = document.getElementById('camion-' + camionId);
+    // Trouver la ligne cible
+    var targetRow = $('tr[id^="camion-' + camionId + '-date-' + date.replace(/-/g, '-') + '"]').last();
 
-    // Insérer l'iframe en dessous de la ligne du camion
-    if (camionRow) {
-        camionRow.insertAdjacentElement('afterend', iframe);
-    } else {
-        console.error("La ligne du camion n'a pas été trouvée.");
+    if (targetRow.length) {
+        // Créer une nouvelle ligne pour l'iframe
+        var newRow = $('<tr><td colspan="11"></td></tr>');
+        newRow.find('td').append(iframe);
+        targetRow.after(newRow);
     }
 }
+
+// Fonction pour actualiser la liste
+function actualiserListeLivraisons() {
+    // Solution simple et efficace - rechargement complet
+    location.reload();
+}
+
+// Fonction pour fermer l'iframe
+function fermerIframe() {
+    $('iframe').parent().parent().remove();
+}
+// Écouteur pour le rechargement
+window.addEventListener('message', function(event) {
+    if (event.data.type === 'RELOAD_PAGE') {
+        location.reload(true);  // Force un rechargement complet
+    }
+});
 </script>
 {% endblock %}
