@@ -1,13 +1,13 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="container mt-5 pt-4"> <!-- Ajout de pt-4 pour compenser la navbar fixe -->
+<div class="container mt-5">
     <h2><i class="fas fa-tachometer-alt text-primary"></i> Tableau de Bord 📊</h2><br>
 
     <!-- Étape 1 : Choix du type de filtre -->
     <div class="mb-3">
         <label for="filter_type"><i class="fas fa-filter text-secondary"></i> Choisir le type de filtre :</label>
-        <select id="filter_type" name="filter_type" class="form-control w-100 w-md-auto" onchange="showFilterForm()">
+        <select id="filter_type" name="filter_type" class="form-control d-inline-block w-auto" onchange="showFilterForm()">
             <option value="">-- Sélectionnez un filtre --</option>
             <option value="date" {% if filter_type == 'date' %}selected{% endif %}>Date personnalisée</option>
             <option value="month" {% if filter_type == 'month' %}selected{% endif %}>Mois spécifique</option>
@@ -20,8 +20,8 @@
         <form method="GET" class="mb-3">
             <input type="hidden" name="filter_type" value="date">
             <label for="date"><i class="fas fa-calendar-day text-info"></i> Sélectionner une date :</label>
-            <input type="date" id="date" name="date" value="{{ selected_date|default:'' }}" class="form-control w-100 w-md-auto">
-            <button type="submit" class="btn btn-primary mt-2 mt-md-0"><i class="fas fa-filter"></i> Filtrer</button>
+            <input type="date" id="date" name="date" value="{{ selected_date|default:'' }}" class="form-control d-inline-block w-auto">
+            <button type="submit" class="btn btn-primary"><i class="fas fa-filter"></i> Filtrer</button>
         </form>
     </div>
 
@@ -30,8 +30,8 @@
         <form method="GET" class="mb-3">
             <input type="hidden" name="filter_type" value="month">
             <label for="month"><i class="fas fa-calendar-alt text-warning"></i> Sélectionner un mois :</label>
-            <input type="month" id="month" name="month" value="{{ selected_month|default:'' }}" class="form-control w-100 w-md-auto">
-            <button type="submit" class="btn btn-primary mt-2 mt-md-0"><i class="fas fa-filter"></i> Filtrer</button>
+            <input type="month" id="month" name="month" value="{{ selected_month|default:'' }}" class="form-control d-inline-block w-auto">
+            <button type="submit" class="btn btn-primary"><i class="fas fa-filter"></i> Filtrer</button>
         </form>
     </div>
 
@@ -40,12 +40,12 @@
         <form method="GET" class="mb-3">
             <input type="hidden" name="filter_type" value="year">
             <label for="year"><i class="fas fa-calendar text-danger"></i> Sélectionner une année :</label>
-            <select id="year" name="year" class="form-control w-100 w-md-auto">
+            <select id="year" name="year" class="form-control d-inline-block w-auto">
                 {% for year in last_five_years %}
                     <option value="{{ year }}" {% if selected_year == year %}selected{% endif %}>{{ year }}</option>
                 {% endfor %}
             </select>
-            <button type="submit" class="btn btn-primary mt-2 mt-md-0"><i class="fas fa-filter"></i> Filtrer</button>
+            <button type="submit" class="btn btn-primary"><i class="fas fa-filter"></i> Filtrer</button>
         </form>
     </div>
 
@@ -59,26 +59,25 @@
         }
     </script>
 
-    <!-- Cartes de Statistiques -->
     <div class="row">
-        <div class="col-md-4 mb-3">
-            <div class="card text-white bg-primary h-100">
+        <div class="col-md-4">
+            <div class="card text-white bg-primary mb-3">
                 <div class="card-body">
                     <h5 class="card-title"><i class="fas fa-weight text-light"></i> Total Tonnage</h5>
                     <p class="card-text">{{ total_tonnage }} tonnes</p>
                 </div>
             </div>
         </div>
-        <div class="col-md-4 mb-3">
-            <div class="card text-white bg-success h-100">
+        <div class="col-md-4">
+            <div class="card text-white bg-success mb-3">
                 <div class="card-body">
                     <h5 class="card-title"><i class="fas fa-money-bill-wave text-light"></i> Total Montant</h5>
                     <p class="card-text">{{ total_montant }} F CFA</p>
                 </div>
             </div>
         </div>
-        <div class="col-md-4 mb-3">
-            <div class="card text-white bg-warning h-100">
+        <div class="col-md-4">
+            <div class="card text-white bg-warning mb-3">
                 <div class="card-body">
                     <h5 class="card-title"><i class="fas fa-truck text-light"></i> Nombre de Livraisons</h5>
                     <p class="card-text">{{ total_livraisons }} Livraisons</p>
@@ -87,57 +86,47 @@
         </div>
     </div>
 
-    <!-- Tableau des Livraisons -->
     <h3 class="mt-4"><i class="fas fa-table text-secondary"></i> Tableau des Livraisons</h3>
-    <div class="table-responsive">
-        <table class="table table-striped">
-            <thead>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th><i class="fas fa-calendar text-info"></i> Date</th>
+                <th><i class="fas fa-truck text-primary"></i> N° Camion</th>
+                <th><i class="fas fa-phone text-success"></i> Numéro Téléphone</th>
+                <th><i class="fas fa-weight text-warning"></i> Tonnage</th>
+                <th><i class="fas fa-dollar-sign text-danger"></i> Prix Unitaire</th>
+                <th><i class="fas fa-box text-secondary"></i> Quantité</th>
+                <th><i class="fas fa-money-bill-wave text-success"></i> Montant</th>
+                <th><i class="fas fa-recycle text-info"></i> Chiffonage</th>
+                <th><i class="fas fa-barcode text-primary"></i> N° BL</th>
+                <th><i class="fas fa-info-circle text-warning"></i> Statut</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for livraison in livraisons_mois %}
                 <tr>
-                    <th><i class="fas fa-calendar text-info"></i> Date</th>
-                    <th><i class="fas fa-truck text-primary"></i> N° Camion</th>
-                    <th><i class="fas fa-phone text-success"></i> Numéro Téléphone</th>
-                    <th><i class="fas fa-weight text-warning"></i> Tonnage</th>
-                    <th><i class="fas fa-dollar-sign text-danger"></i> Prix Unitaire</th>
-                    <th><i class="fas fa-box text-secondary"></i> Quantité</th>
-                    <th><i class="fas fa-money-bill-wave text-success"></i> Montant</th>
-                    <th><i class="fas fa-recycle text-info"></i> Chiffonage</th>
-                    <th><i class="fas fa-barcode text-primary"></i> N° BL</th>
-                    <th><i class="fas fa-info-circle text-warning"></i> Statut</th>
+                    <td>{{ livraison.date }}</td>
+                    <td>{{ livraison.camion__numero }}</td>
+                    <td>{{ livraison.camion__telephone }}</td>
+                    <td>{{ livraison.tonnage }}</td>
+                    <td>{{ livraison.prix_unitaire }}</td>
+                    <td>{{ livraison.quantite }}</td>
+                    <td>{{ livraison.montant }}</td>
+                    <td>{{ livraison.chiffonage }}</td>
+                    <td>{{ livraison.numero_bl }}</td>
+                    <td>{{ livraison.statut }}</td>
                 </tr>
-            </thead>
-            <tbody>
-                {% for livraison in livraisons_mois %}
-                    <tr>
-                        <td>{{ livraison.date }}</td>
-                        <td>{{ livraison.camion__numero }}</td>
-                        <td>{{ livraison.camion__telephone }}</td>
-                        <td>{{ livraison.tonnage }}</td>
-                        <td>{{ livraison.prix_unitaire }}</td>
-                        <td>{{ livraison.quantite }}</td>
-                        <td>{{ livraison.montant }}</td>
-                        <td>{{ livraison.chiffonage }}</td>
-                        <td>{{ livraison.numero_bl }}</td>
-                        <td>{{ livraison.statut }}</td>
-                    </tr>
-                {% empty %}
-                    <tr>
-                        <td colspan="10" class="text-center"><i class="fas fa-exclamation-circle text-danger"></i> Aucune livraison dans cette période</td>
-                    </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
+            {% empty %}
+                <tr>
+                    <td colspan="10" class="text-center"><i class="fas fa-exclamation-circle text-danger"></i> Aucune livraison dans cette période</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
 
-    <!-- Graphiques -->
     <h3 class="mt-4"><i class="fas fa-chart-line text-primary"></i> Évolution des Livraisons 📈</h3>
-    <div class="row">
-        <div class="col-12 col-md-6">
-            <canvas id="tonnageChart" width="400" height="200"></canvas>
-        </div>
-        <div class="col-12 col-md-6">
-            <canvas id="montantChart" width="400" height="200" class="mt-4"></canvas>
-        </div>
-    </div>
+    <canvas id="tonnageChart" width="400" height="200"></canvas>
+    <canvas id="montantChart" width="400" height="200" class="mt-4"></canvas>
 
     <script>
         document.addEventListener("DOMContentLoaded", function() {
