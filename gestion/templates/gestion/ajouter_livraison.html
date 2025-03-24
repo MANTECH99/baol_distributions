@@ -1,60 +1,159 @@
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
-<p><strong>Camion :</strong> {{ camion.numero }}</p>
-<p><strong>Date :</strong> {{ selected_date|date:"j F Y" }}</p>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
-<form method="POST" class="inline-form">
-    {% csrf_token %}
-
-    <div class="form-fields">
-        {% for field in form %}
-            <div class="form-field">
-                <label for="{{ field.id_for_label }}">{{ field.label }}</label>
-                {{ field }}
-                {% if field.errors %}
-                    <div class="error">
-                        {{ field.errors }}
-                    </div>
-                {% endif %}
-            </div>
-        {% endfor %}
-    </div><br>
-
-    <div class="form-field">
-        <button type="submit" class="btn btn-primary">Enregistrer</button>
-        <button type="button" class="btn btn-secondary" onclick="fermerIframe()">Fermer</button>
+<div class="livraison-form-container">
+    <div class="form-header mb-3">
+        <div class="d-flex align-items-center gap-3 mb-3">
+            <h5 class="text-primary mb-0"><i class="fas fa-truck-loading me-2"></i>Nouvelle livraison</h5>
+            <span class="badge bg-primary bg-opacity-10 text-primary p-2 fs-6">
+                <i class="fas fa-truck me-2"></i>
+                <strong>Camion :</strong> {{ camion.numero }}
+            </span>
+            <span class="badge bg-info bg-opacity-10 text-info p-2 fs-6">
+                <i class="far fa-calendar me-2"></i>
+                <strong>Date :</strong> {{ selected_date|date:"j F Y" }}
+            </span>
+        </div>
     </div>
-</form>
 
-<style>
-    .inline-form .form-fields {
-        display: flex;
-        flex-wrap: nowrap;
-        gap: 10px;
-        align-items: center;
-    }
+    <form id="livraisonForm" method="post">
+        {% csrf_token %}
 
-    .inline-form .form-field {
-        flex: 1;
-        margin-bottom: 0;
-    }
+        <div class="form-fields">
+            <!-- Tonnage -->
+            <div class="form-field">
+                <label for="id_tonnage"><i class="fas fa-weight-hanging me-1"></i>{{ form.tonnage.label }}</label>
+                {{ form.tonnage }}
+                <div class="error text-danger" id="error_tonnage" style="display:none;"></div>
+            </div>
 
-    .inline-form label {
-        display: block;
-        margin-bottom: 5px;
-    }
+            <!-- Quantité -->
+            <div class="form-field">
+                <label for="id_quantite"><i class="fas fa-boxes me-1"></i>{{ form.quantite.label }}</label>
+                {{ form.quantite }}
+                <div class="error text-danger" id="error_quantite" style="display:none;"></div>
+            </div>
 
-    .inline-form .error {
-        color: red;
-        font-size: 0.9em;
-    }
-</style>
+            <!-- Chiffonage -->
+            <div class="form-field">
+                <label for="id_chiffonage"><i class="fas fa-recycle me-1"></i>{{ form.chiffonage.label }}</label>
+                {{ form.chiffonage }}
+                <div class="error text-danger" id="error_chiffonage" style="display:none;"></div>
+            </div>
+
+            <!-- Numéro BL -->
+            <div class="form-field">
+                <label for="id_numero_bl"><i class="fas fa-barcode me-1"></i>{{ form.numero_bl.label }}</label>
+                {{ form.numero_bl }}
+                <div class="error text-danger" id="error_numero_bl" style="display:none;"></div>
+            </div>
+
+            <!-- Statut -->
+            <div class="form-field">
+                <label for="id_statut"><i class="fas fa-info-circle me-1"></i>{{ form.statut.label }}</label>
+                {{ form.statut }}
+                <div class="error text-danger" id="error_statut" style="display:none;"></div>
+            </div>
+        </div>
+
+        <div class="form-actions mt-4 pt-2 border-top">
+            <button type="button" class="btn btn-outline-secondary" onclick="fermerIframe()">
+                <i class="fas fa-times me-1"></i>Fermer
+            </button>
+            <button type="submit" class="btn btn-primary" id="submitBtn">
+                <i class="fas fa-save me-1"></i>Enregistrer
+            </button>
+        </div>
+    </form>
+</div>
 
 <script>
+// Fonction ultra-minimale pour fermer l'iframe
 function fermerIframe() {
-    // Fermer l'iframe en le supprimant du DOM
-    var iframe = window.frameElement;
-    if (iframe) {
-        iframe.remove(); // Supprime l'iframe
+    const iframe = window.frameElement;
+    if (iframe && iframe.parentNode) {
+        iframe.parentNode.removeChild(iframe);
     }
 }
+
+$(document).ready(function() {
+    $('#livraisonForm').on('submit', function(e) {
+        e.preventDefault();
+
+        $('#submitBtn').prop('disabled', true);
+
+        $.ajax({
+            url: window.location.href,
+            type: 'POST',
+            data: $(this).serialize(),
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRFToken': $('input[name="csrfmiddlewaretoken"]').val()
+            },
+            success: function(response) {
+                if (response.success) {
+                    // Envoie un message à la page parente pour qu'elle se recharge
+                    if (window.parent) {
+                        window.parent.postMessage({ type: 'RELOAD_PAGE' }, '*');
+                    }
+                    // Ferme l'iframe
+                    fermerIframe();
+                } else {
+                    $.each(response.errors, function(field, errors) {
+                        $('#error_' + field).text(errors[0]).show();
+                    });
+                }
+            },
+            error: function(xhr) {
+                alert("Erreur: " + xhr.statusText);
+            },
+            complete: function() {
+                $('#submitBtn').prop('disabled', false);
+            }
+        });
+    });
+});
 </script>
+<style>
+.livraison-form-container {
+    padding: 15px;
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 5px;
+}
+
+.form-header {
+    padding-bottom: 10px;
+    border-bottom: 1px solid #dee2e6;
+    margin-bottom: 15px;
+}
+
+.form-fields {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.form-field {
+    flex: 1;
+    min-width: 200px;
+}
+
+.form-field label i {
+    width: 20px;
+    color: #6c757d;
+}
+
+.form-actions {
+    margin-top: 20px;
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+}
+
+.badge {
+    padding: 5px 10px;
+    font-weight: normal;
+}
+</style>
