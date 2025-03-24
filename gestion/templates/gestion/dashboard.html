@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="container mt-5">
+<div class="container mt-5 pt-4"> <!-- Ajout de pt-4 pour compenser la navbar fixe -->
     <h2><i class="fas fa-tachometer-alt text-primary"></i> Tableau de Bord 📊</h2><br>
 
     <!-- Étape 1 : Choix du type de filtre -->
@@ -61,24 +61,24 @@
 
     <!-- Cartes de Statistiques -->
     <div class="row">
-        <div class="col-md-4">
-            <div class="card text-white bg-primary mb-3">
+        <div class="col-md-4 mb-3">
+            <div class="card text-white bg-primary h-100">
                 <div class="card-body">
                     <h5 class="card-title"><i class="fas fa-weight text-light"></i> Total Tonnage</h5>
                     <p class="card-text">{{ total_tonnage }} tonnes</p>
                 </div>
             </div>
         </div>
-        <div class="col-md-4">
-            <div class="card text-white bg-success mb-3">
+        <div class="col-md-4 mb-3">
+            <div class="card text-white bg-success h-100">
                 <div class="card-body">
                     <h5 class="card-title"><i class="fas fa-money-bill-wave text-light"></i> Total Montant</h5>
                     <p class="card-text">{{ total_montant }} F CFA</p>
                 </div>
             </div>
         </div>
-        <div class="col-md-4">
-            <div class="card text-white bg-warning mb-3">
+        <div class="col-md-4 mb-3">
+            <div class="card text-white bg-warning h-100">
                 <div class="card-body">
                     <h5 class="card-title"><i class="fas fa-truck text-light"></i> Nombre de Livraisons</h5>
                     <p class="card-text">{{ total_livraisons }} Livraisons</p>
