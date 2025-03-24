@@ -20,49 +20,68 @@ def ajouter_livraison(request):
     date_param = request.GET.get('date')
     camion_id = request.GET.get('camion')
 
-    # Convertir la date en objet datetime
     try:
         selected_date = datetime.strptime(date_param, "%Y-%m-%d").date() if date_param else None
     except ValueError:
         selected_date = None
 
-    # Récupérer le camion correspondant
-    camion = None
-    if camion_id:
-        try:
-            camion = get_object_or_404(Camion, id=camion_id)
-        except Exception as e:
-            return HttpResponse(f"Erreur : {str(e)}", status=400)
+    camion = get_object_or_404(Camion, id=camion_id) if camion_id else None
 
     if request.method == "POST":
         form = LivraisonForm(request.POST)
         if form.is_valid():
             livraison = form.save(commit=False)
-            livraison.date = selected_date  # Pré-remplit la date
-            livraison.camion = camion       # Pré-remplit le camion
+            livraison.date = selected_date
+            livraison.camion = camion
             livraison.save()
 
-            # Rediriger vers la liste des livraisons dans la fenêtre parente
-            return HttpResponse(f"""
-                <script>
-                    window.top.location.href = "{reverse('liste_livraisons')}";
-                </script>
-            """)
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({
+                    'success': True,
+                    'message': 'Livraison enregistrée avec succès',
+                    'livraison': {
+                        'id': livraison.id,
+                        'date': livraison.date.strftime('%Y-%m-%d'),
+                        'date_display': livraison.date.strftime('%d %B %Y'),
+                        'camion_id': camion.id,
+                        'camion_numero': camion.numero,
+                        'tonnage': str(livraison.tonnage),
+                        'prix_unitaire': str(livraison.prix_unitaire),
+                        'quantite': livraison.quantite,
+                        'montant': str(livraison.montant),
+                        'chiffonage': livraison.chiffonage,
+                        'numero_bl': livraison.numero_bl,
+                        'statut': livraison.get_statut_display(),
+                    }
+                })
+            else:
+                return HttpResponse(f"""
+                    <script>
+                        window.top.location.reload(true);
+                    </script>
+                """)
         else:
-            # Si le formulaire n'est pas valide, réafficher le formulaire avec les erreurs
-            return render(request, 'gestion/ajouter_livraison.html', {
-                'form': form,
-                'camion': camion,
-                'selected_date': selected_date
-            })
-    else:
-        # Si la méthode est GET, afficher le formulaire vide
-        form = LivraisonForm()
-        return render(request, 'gestion/ajouter_livraison.html', {
-            'form': form,
-            'camion': camion,
-            'selected_date': selected_date
-        })
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                errors = {f: [str(e) for e in form.errors[f]] for f in form.errors}
+                return JsonResponse({
+                    'success': False,
+                    'errors': errors
+                }, status=400)
+            else:
+                return render(request, 'gestion/ajouter_livraison.html', {
+                    'form': form,
+                    'camion': camion,
+                    'selected_date': selected_date
+                })
+
+    # GET request - afficher le formulaire
+    form = LivraisonForm()
+    return render(request, 'gestion/ajouter_livraison.html', {
+        'form': form,
+        'camion': camion,
+        'selected_date': selected_date
+    })
+
 
 
 from django.shortcuts import render
