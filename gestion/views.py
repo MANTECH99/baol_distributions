@@ -12,7 +12,7 @@ from .forms import LivraisonForm
 from django.db.models import Sum, Min
 from django.utils.timezone import now
 import json
-from datetime import datetime, date
+from datetime import datetime, date, timedelta
 from django.views.decorators.clickjacking import xframe_options_exempt
 @xframe_options_exempt
 def ajouter_livraison(request):
@@ -82,8 +82,6 @@ def ajouter_livraison(request):
         'selected_date': selected_date
     })
 
-
-
 from django.shortcuts import render
 from datetime import date, datetime
 from .models import Livraison, Camion, StatutCamion
@@ -91,45 +89,47 @@ from .models import Livraison, Camion, StatutCamion
 def liste_livraisons(request):
     # Récupérer les paramètres de filtre
     filter_type = request.GET.get('filter_type')
-    selected_date = request.GET.get('date', date.today().strftime('%Y-%m-%d'))  # Date par défaut : aujourd'hui
-    selected_month = request.GET.get('month', date.today().strftime('%Y-%m'))  # Mois par défaut : ce mois
+    selected_date = request.GET.get('date', date.today().strftime('%Y-%m-%d'))
+    selected_month = request.GET.get('month', date.today().strftime('%Y-%m'))
     selected_camion_id = request.GET.get('camion')
 
     # Initialiser les variables
     selected_date_obj = None
+    date_range = []
     livraisons = Livraison.objects.all()
 
     # Appliquer le filtre par date ou mois
     if filter_type == 'date':
-        # Filtrer par date personnalisée
         try:
             selected_date_obj = datetime.strptime(selected_date, "%Y-%m-%d").date()
             livraisons = livraisons.filter(date=selected_date_obj)
+            date_range = [selected_date_obj]
         except ValueError:
-            # En cas d'erreur de format de date, on affiche les livraisons du jour
             selected_date_obj = date.today()
             livraisons = livraisons.filter(date=selected_date_obj)
+            date_range = [selected_date_obj]
         selected_month = None
     elif filter_type == 'month':
-        # Filtrer par mois spécifique
         try:
             year, month = map(int, selected_month.split('-'))
             selected_date_obj = date(year, month, 1)
+            last_day = (selected_date_obj.replace(month=month % 12 + 1, day=1) - timedelta(days=1)).day
+            date_range = [date(year, month, day) for day in range(1, last_day + 1)]
             livraisons = livraisons.filter(date__year=year, date__month=month)
         except ValueError:
-            # En cas d'erreur de format de mois, on affiche les livraisons du jour
             selected_date_obj = date.today()
             livraisons = livraisons.filter(date=selected_date_obj)
+            date_range = [selected_date_obj]
         selected_date = None
     else:
-        # Par défaut, afficher les livraisons du jour
         selected_date = date.today().strftime('%Y-%m-%d')
         selected_date_obj = date.today()
         livraisons = livraisons.filter(date=selected_date_obj)
+        date_range = [selected_date_obj]
         selected_month = None
 
     # Appliquer le filtre par camion si un camion est sélectionné
-    if selected_camion_id and selected_camion_id != "None":  # Vérifier que selected_camion_id n'est pas "None"
+    if selected_camion_id and selected_camion_id != "None":
         livraisons = livraisons.filter(camion_id=selected_camion_id)
 
     # Trier les livraisons par date
@@ -138,12 +138,16 @@ def liste_livraisons(request):
     # Récupérer tous les camions
     camions = Camion.objects.all()
 
-    # Organiser les livraisons par camion
-    livraisons_par_camion = {}
-    for livraison in livraisons:
-        if livraison.camion.id not in livraisons_par_camion:
-            livraisons_par_camion[livraison.camion.id] = []
-        livraisons_par_camion[livraison.camion.id].append(livraison)
+    # Organiser les livraisons par camion et par date
+    livraisons_par_camion_et_date = {}
+    for camion in camions:
+        livraisons_par_camion_et_date[camion.id] = {}
+        for day in date_range:
+            livraisons_du_jour = livraisons.filter(camion=camion, date=day)
+            if livraisons_du_jour.exists():
+                livraisons_par_camion_et_date[camion.id][day] = list(livraisons_du_jour)
+            else:
+                livraisons_par_camion_et_date[camion.id][day] = None
 
     # Récupérer les statuts des camions
     statuts_camions = {statut.camion.id: statut for statut in StatutCamion.objects.all()}
@@ -152,13 +156,14 @@ def liste_livraisons(request):
     context = {
         'livraisons': livraisons,
         'camions': camions,
-        'livraisons_par_camion': livraisons_par_camion,
+        'livraisons_par_camion_et_date': livraisons_par_camion_et_date,
         'statuts_camions': statuts_camions,
         'selected_date': selected_date,
         'selected_month': selected_month,
         'selected_camion_id': selected_camion_id,
         'selected_date_obj': selected_date_obj,
         'filter_type': filter_type,
+        'date_range': date_range,
     }
 
     return render(request, 'gestion/livraisons.html', context)
