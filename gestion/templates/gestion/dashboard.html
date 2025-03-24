@@ -3,62 +3,109 @@
 {% block content %}
 <div class="container mt-5">
     <h2><i class="fas fa-tachometer-alt text-primary"></i> Tableau de Bord 📊</h2><br>
+<!-- Formulaire de sélection du camion -->
+<div class="mb-3">
+    <label for="camion_filter"><i class="fas fa-truck text-primary"></i> Filtrer par camion :</label>
+    <form method="GET" class="d-inline-block">
+        <!-- Champs cachés pour conserver les autres filtres -->
+        <input type="hidden" name="filter_type" value="{{ filter_type }}">
+        <input type="hidden" name="date" value="{{ selected_date }}">
+        <input type="hidden" name="month" value="{{ selected_month }}">
+        <input type="hidden" name="year" value="{{ selected_year }}">
 
-    <!-- Étape 1 : Choix du type de filtre -->
-    <div class="mb-3">
-        <label for="filter_type"><i class="fas fa-filter text-secondary"></i> Choisir le type de filtre :</label>
-        <select id="filter_type" name="filter_type" class="form-control d-inline-block w-auto" onchange="showFilterForm()">
-            <option value="">-- Sélectionnez un filtre --</option>
-            <option value="date" {% if filter_type == 'date' %}selected{% endif %}>Date personnalisée</option>
-            <option value="month" {% if filter_type == 'month' %}selected{% endif %}>Mois spécifique</option>
-            <option value="year" {% if filter_type == 'year' %}selected{% endif %}>Année spécifique</option>
+        <select id="camion_filter" name="camion" class="form-control d-inline-block w-auto" onchange="this.form.submit()">
+            <option value="">Tous les camions</option>
+            {% for camion in camions %}
+                <option value="{{ camion.id }}" {% if selected_camion_id == camion.id|stringformat:"s" %}selected{% endif %}>
+                    {{ camion.numero }}
+                </option>
+            {% endfor %}
         </select>
-    </div><br>
+    </form>
+</div>
 
-    <!-- Formulaire pour la date personnalisée -->
-    <div id="date_form" style="display: {% if filter_type == 'date' %}block{% else %}none{% endif %};">
-        <form method="GET" class="mb-3">
-            <input type="hidden" name="filter_type" value="date">
-            <label for="date"><i class="fas fa-calendar-day text-info"></i> Sélectionner une date :</label>
-            <input type="date" id="date" name="date" value="{{ selected_date|default:'' }}" class="form-control d-inline-block w-auto">
-            <button type="submit" class="btn btn-primary"><i class="fas fa-filter"></i> Filtrer</button>
-        </form>
-    </div>
+<!-- Choix du type de filtre temporel -->
+<div class="mb-3">
+    <label for="filter_type"><i class="fas fa-filter text-secondary"></i> Choisissez une Période :</label>
+    <select id="filter_type" name="filter_type" class="form-control d-inline-block w-auto" onchange="showFilterForm()">
+        <option value="">-- Sélectionnez --</option>
+        <option value="date" {% if filter_type == 'date' %}selected{% endif %}>Date Spécifique</option>
+        <option value="month" {% if filter_type == 'month' %}selected{% endif %}>Mois Spécifique</option>
+        <option value="year" {% if filter_type == 'year' %}selected{% endif %}>Année Spécifique</option>
+    </select>
+</div>
 
-    <!-- Formulaire pour le mois spécifique -->
-    <div id="month_form" style="display: {% if filter_type == 'month' %}block{% else %}none{% endif %};">
-        <form method="GET" class="mb-3">
-            <input type="hidden" name="filter_type" value="month">
-            <label for="month"><i class="fas fa-calendar-alt text-warning"></i> Sélectionner un mois :</label>
-            <input type="month" id="month" name="month" value="{{ selected_month|default:'' }}" class="form-control d-inline-block w-auto">
-            <button type="submit" class="btn btn-primary"><i class="fas fa-filter"></i> Filtrer</button>
-        </form>
-    </div>
+<!-- Formulaire pour la date (visible seulement si filtre date sélectionné) -->
+<div id="date_form" style="display: {% if filter_type == 'date' %}block{% else %}none{% endif %};">
+    <form method="GET" class="mb-3">
+        <!-- Champs cachés pour conserver les autres filtres -->
+        <input type="hidden" name="filter_type" value="date">
+        <input type="hidden" name="camion" value="{{ selected_camion_id|default:'' }}">
+        <input type="hidden" name="month" value="">
+        <input type="hidden" name="year" value="">
 
-    <!-- Formulaire pour l'année spécifique -->
-    <div id="year_form" style="display: {% if filter_type == 'year' %}block{% else %}none{% endif %};">
-        <form method="GET" class="mb-3">
-            <input type="hidden" name="filter_type" value="year">
-            <label for="year"><i class="fas fa-calendar text-danger"></i> Sélectionner une année :</label>
-            <select id="year" name="year" class="form-control d-inline-block w-auto">
-                {% for year in last_five_years %}
-                    <option value="{{ year }}" {% if selected_year == year %}selected{% endif %}>{{ year }}</option>
-                {% endfor %}
-            </select>
-            <button type="submit" class="btn btn-primary"><i class="fas fa-filter"></i> Filtrer</button>
-        </form>
-    </div>
+        <label for="date"><i class="fas fa-calendar-day text-info"></i> Selectionnez Date :</label>
+        <input type="date" id="date" name="date" value="{{ selected_date|default:'' }}" class="form-control d-inline-block w-auto">
+        <button type="submit" class="btn btn-primary ml-2"><i class="fas fa-filter"></i> Appliquer</button>
+    </form>
+</div>
 
-    <!-- Script JavaScript pour afficher le formulaire correspondant -->
-    <script>
-        function showFilterForm() {
-            const filterType = document.getElementById('filter_type').value;
-            document.getElementById('date_form').style.display = filterType === 'date' ? 'block' : 'none';
-            document.getElementById('month_form').style.display = filterType === 'month' ? 'block' : 'none';
-            document.getElementById('year_form').style.display = filterType === 'year' ? 'block' : 'none';
-        }
-    </script>
+<!-- Formulaire pour le mois (visible seulement si filtre mois sélectionné) -->
+<div id="month_form" style="display: {% if filter_type == 'month' %}block{% else %}none{% endif %};">
+    <form method="GET" class="mb-3">
+        <!-- Champs cachés pour conserver les autres filtres -->
+        <input type="hidden" name="filter_type" value="month">
+        <input type="hidden" name="camion" value="{{ selected_camion_id|default:'' }}">
+        <input type="hidden" name="date" value="">
+        <input type="hidden" name="year" value="">
 
+        <label for="month"><i class="fas fa-calendar-alt text-warning"></i> Selectionnez un Mois :</label>
+        <input type="month" id="month" name="month" value="{{ selected_month|default:'' }}" class="form-control d-inline-block w-auto">
+        <button type="submit" class="btn btn-primary ml-2"><i class="fas fa-filter"></i> Appliquer</button>
+    </form>
+</div>
+
+<!-- Formulaire pour l'année (visible seulement si filtre année sélectionné) -->
+<div id="year_form" style="display: {% if filter_type == 'year' %}block{% else %}none{% endif %};">
+    <form method="GET" class="mb-3">
+        <!-- Champs cachés pour conserver les autres filtres -->
+        <input type="hidden" name="filter_type" value="year">
+        <input type="hidden" name="camion" value="{{ selected_camion_id|default:'' }}">
+        <input type="hidden" name="date" value="">
+        <input type="hidden" name="month" value="">
+
+        <label for="year"><i class="fas fa-calendar text-danger"></i> Selectionnez une Année :</label>
+        <select id="year" name="year" class="form-control d-inline-block w-auto">
+            {% for year in last_five_years %}
+                <option value="{{ year }}" {% if selected_year == year|stringformat:"s" %}selected{% endif %}>{{ year }}</option>
+            {% endfor %}
+        </select>
+        <button type="submit" class="btn btn-primary ml-2"><i class="fas fa-filter"></i> Appliquer</button>
+    </form>
+</div>
+
+<!-- Bouton de réinitialisation -->
+<a href="{% url 'dashboard' %}" class="btn btn-secondary mb-3">
+    <i class="fas fa-undo"></i> Réinitialiser
+</a>
+
+<script>
+// Fonction pour afficher le bon formulaire de filtre temporel
+function showFilterForm() {
+    const filterType = document.getElementById('filter_type').value;
+    document.getElementById('date_form').style.display = 'none';
+    document.getElementById('month_form').style.display = 'none';
+    document.getElementById('year_form').style.display = 'none';
+
+    if (filterType === 'date') {
+        document.getElementById('date_form').style.display = 'block';
+    } else if (filterType === 'month') {
+        document.getElementById('month_form').style.display = 'block';
+    } else if (filterType === 'year') {
+        document.getElementById('year_form').style.display = 'block';
+    }
+}
+</script>
     <div class="row">
         <div class="col-md-4">
             <div class="card text-white bg-primary mb-3">
@@ -122,46 +169,136 @@
                 </tr>
             {% endfor %}
         </tbody>
-    </table>
+    </table><br>
 
-    <h3 class="mt-4"><i class="fas fa-chart-line text-primary"></i> Évolution des Livraisons 📈</h3>
-    <canvas id="tonnageChart" width="400" height="200"></canvas>
-    <canvas id="montantChart" width="400" height="200" class="mt-4"></canvas>
+<!-- Section des graphiques -->
+<h3 class="mt-4"><i class="fas fa-chart-line text-primary"></i> Évolution des Livraisons 📈</h3><br>
+<div class="row">
+    <!-- Graphique Tonnage -->
+    <div class="col-md-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header bg-primary text-white">
+                <i class="fas fa-weight"></i> Évolution du Tonnage
+            </div>
+            <div class="card-body" style="height: 400px;">
+                <canvas id="tonnageChart" ></canvas>
+            </div>
+        </div>
+    </div>
 
-    <script>
-        document.addEventListener("DOMContentLoaded", function() {
-            const moisLabels = JSON.parse('{{ mois_labels|safe }}');
-            const tonnageValues = JSON.parse('{{ tonnage_values|safe }}');
-            const montantValues = JSON.parse('{{ montant_values|safe }}');
+    <!-- Graphique Montant -->
+    <div class="col-md-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header bg-success text-white">
+                <i class="fas fa-money-bill-wave"></i> Évolution du Montant
+            </div>
+            <div class="card-body" style="height: 400px;">
+                <canvas id="montantChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
 
-            // Graphique du tonnage
-            new Chart(document.getElementById('tonnageChart'), {
-                type: 'line',
-                data: {
-                    labels: moisLabels,
-                    datasets: [{
-                        label: 'Tonnage livré',
-                        data: tonnageValues,
-                        borderColor: 'blue',
-                        backgroundColor: 'rgba(0, 0, 255, 0.2)',
-                        fill: true
-                    }]
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    // Données des graphiques
+    const moisLabels = JSON.parse('{{ mois_labels|safe }}');
+    const tonnageValues = JSON.parse('{{ tonnage_values|safe }}');
+    const montantValues = JSON.parse('{{ montant_values|safe }}');
+
+    // Options communes
+    const commonOptions = {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                display: true,
+                position: 'top'
+            }
+        },
+        scales: {
+            x: {
+                grid: {
+                    display: false
                 }
-            });
+            },
+            y: {
+                beginAtZero: true
+            }
+        }
+    };
 
-            // Graphique du montant
-            new Chart(document.getElementById('montantChart'), {
-                type: 'bar',
-                data: {
-                    labels: moisLabels,
-                    datasets: [{
-                        label: 'Montant total (F CFA)',
-                        data: montantValues,
-                        backgroundColor: 'green'
-                    }]
+    // Graphique Tonnage (Line Chart)
+    const tonnageCtx = document.getElementById('tonnageChart').getContext('2d');
+    new Chart(tonnageCtx, {
+        type: 'line',
+        data: {
+            labels: moisLabels,
+            datasets: [{
+                label: 'Tonnage (tonnes)',
+                data: tonnageValues,
+                borderColor: 'rgba(54, 162, 235, 1)',
+                backgroundColor: 'rgba(54, 162, 235, 0.1)',
+                borderWidth: 2,
+                tension: 0.3,
+                fill: true
+            }]
+        },
+        options: {
+            ...commonOptions,
+            plugins: {
+                ...commonOptions.plugins,
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return context.parsed.y.toFixed(2) + ' tonnes';
+                        }
+                    }
                 }
-            });
-        });
-    </script>
+            }
+        }
+    });
+
+    // Graphique Montant (Bar Chart)
+    const montantCtx = document.getElementById('montantChart').getContext('2d');
+    new Chart(montantCtx, {
+        type: 'bar',
+        data: {
+            labels: moisLabels,
+            datasets: [{
+                label: 'Montant (F CFA)',
+                data: montantValues,
+                backgroundColor: 'rgba(75, 192, 192, 0.7)',
+                borderColor: 'rgba(75, 192, 192, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            ...commonOptions,
+            plugins: {
+                ...commonOptions.plugins,
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return new Intl.NumberFormat('fr-FR').format(context.parsed.y) + ' F CFA';
+                        }
+                    }
+                }
+            },
+            scales: {
+                ...commonOptions.scales,
+                y: {
+                    ticks: {
+                        callback: function(value) {
+                            return new Intl.NumberFormat('fr-FR').format(value);
+                        }
+                    }
+                }
+            }
+        }
+    });
+});
+</script>
 </div>
 {% endblock %}
