@@ -191,31 +191,31 @@ def supprimer_livraison(request, livraison_id):
     return redirect('liste_livraisons')
 
 
-
-
-
-
-
 def dashboard(request):
-    # Récupérer le type de filtre (date, mois ou année)
+    # Récupérer tous les paramètres de filtre
     filter_type = request.GET.get('filter_type')
-
-    # Récupérer les valeurs des filtres avec une valeur par défaut
     selected_date = request.GET.get('date', date.today().strftime('%Y-%m-%d'))
     selected_month = request.GET.get('month', date.today().strftime('%Y-%m'))
     selected_year = request.GET.get('year', str(date.today().year))
+    selected_camion_id = request.GET.get('camion')
 
-    # Initialisation des variables
-    livraisons = Livraison.objects.all()
+    # Initialisation
+    base_query = Livraison.objects.all()
     selected_date_obj = date.today()
+    camions = Camion.objects.all()
+
+    # Appliquer le filtre par camion en premier si sélectionné
+    if selected_camion_id and selected_camion_id != "None":
+        base_query = base_query.filter(camion_id=selected_camion_id)
 
     # Filtrage selon le type sélectionné
     if filter_type == 'date':
         try:
             selected_date_obj = datetime.strptime(selected_date, "%Y-%m-%d").date()
+            livraisons = base_query.filter(date=selected_date_obj)
         except ValueError:
             selected_date_obj = date.today()
-        livraisons = livraisons.filter(date=selected_date_obj)
+            livraisons = base_query.filter(date=selected_date_obj)
         selected_month = None
         selected_year = None
 
@@ -223,23 +223,26 @@ def dashboard(request):
         try:
             year, month = map(int, selected_month.split('-'))
             selected_date_obj = date(year, month, 1)
+            livraisons = base_query.filter(date__year=year, date__month=month)
         except ValueError:
             selected_date_obj = date.today()
-        livraisons = livraisons.filter(date__year=year, date__month=month)
+            livraisons = base_query.filter(date=selected_date_obj)
         selected_date = None
         selected_year = None
 
     elif filter_type == 'year':
         try:
             year = int(selected_year)
+            livraisons = base_query.filter(date__year=year)
         except ValueError:
             year = date.today().year
-        livraisons = livraisons.filter(date__year=year)
+            livraisons = base_query.filter(date__year=year)
         selected_date = None
         selected_month = None
 
     else:
-        livraisons = livraisons.filter(date=selected_date_obj)
+        # Par défaut: livraisons du jour
+        livraisons = base_query.filter(date=selected_date_obj)
         selected_month = None
         selected_year = None
 
@@ -248,19 +251,18 @@ def dashboard(request):
         total_tonnage=Sum('tonnage'),
         total_montant=Sum('montant')
     )
-
     total_tonnage = stats['total_tonnage'] or 0
     total_montant = stats['total_montant'] or 0
     total_livraisons = livraisons.count()
 
-    # 🔥 Mise à jour des données des graphiques en fonction du filtre
+    # Préparation des données pour les graphiques
     mois_labels, tonnage_values, montant_values = [], [], []
 
     if filter_type == 'year':
-        # Si filtré par année, récupérer les stats des 12 mois de cette année
+        year = int(selected_year) if selected_year and filter_type == 'year' else date.today().year
         for mois in range(1, 13):
-            livraisons_mois = Livraison.objects.filter(date__year=year, date__month=mois)
-            stats_mois = livraisons_mois.aggregate(
+            query = base_query.filter(date__year=year, date__month=mois)
+            stats_mois = query.aggregate(
                 tonnage_mois=Sum('tonnage'),
                 montant_mois=Sum('montant')
             )
@@ -269,52 +271,50 @@ def dashboard(request):
             montant_values.append(float(stats_mois['montant_mois'] or 0))
 
     elif filter_type == 'month':
-        # Si filtré par mois, récupérer les stats des jours de ce mois
-        from calendar import monthrange
-        nb_jours = monthrange(year, month)[1]
-        for jour in range(1, nb_jours + 1):
-            livraisons_jour = Livraison.objects.filter(date__year=year, date__month=month, date__day=jour)
-            stats_jour = livraisons_jour.aggregate(
-                tonnage_jour=Sum('tonnage'),
-                montant_jour=Sum('montant')
-            )
-            mois_labels.append(f"{jour}/{month}")
-            tonnage_values.append(float(stats_jour['tonnage_jour'] or 0))
-            montant_values.append(float(stats_jour['montant_jour'] or 0))
+        try:
+            year, month = map(int, selected_month.split('-'))
+            from calendar import monthrange
+            nb_jours = monthrange(year, month)[1]
+            for jour in range(1, nb_jours + 1):
+                query = base_query.filter(date__year=year, date__month=month, date__day=jour)
+                stats_jour = query.aggregate(
+                    tonnage_jour=Sum('tonnage'),
+                    montant_jour=Sum('montant')
+                )
+                mois_labels.append(f"{jour}/{month}")
+                tonnage_values.append(float(stats_jour['tonnage_jour'] or 0))
+                montant_values.append(float(stats_jour['montant_jour'] or 0))
+        except ValueError:
+            pass
 
     else:
-        # Par défaut (ou si filtré par date), récupérer les 6 derniers mois
-        mois_actuel = now().month
-        annee_actuelle = now().year
-
-        for i in range(6):  # Derniers 6 mois
+        # Par défaut: 6 derniers mois
+        mois_actuel = date.today().month
+        annee_actuelle = date.today().year
+        for i in range(6):
             mois = (mois_actuel - i) % 12 or 12
             annee = annee_actuelle if mois_actuel - i > 0 else annee_actuelle - 1
-            mois_labels.append(f"{mois}/{annee}")
-
-            livraisons_mois = Livraison.objects.filter(date__year=annee, date__month=mois)
-            stats_mois = livraisons_mois.aggregate(
+            query = base_query.filter(date__year=annee, date__month=mois)
+            stats_mois = query.aggregate(
                 tonnage_mois=Sum('tonnage'),
                 montant_mois=Sum('montant')
             )
+            mois_labels.append(f"{mois}/{annee}")
             tonnage_values.append(float(stats_mois['tonnage_mois'] or 0))
             montant_values.append(float(stats_mois['montant_mois'] or 0))
 
-    # Récupérer les 50 dernières livraisons
+    # Récupérer les livraisons filtrées
     livraisons_mois = livraisons.order_by('-date')[:50].values(
         'date', 'camion__numero', 'camion_id', 'camion__telephone', 'tonnage',
         'prix_unitaire', 'quantite', 'montant', 'chiffonage', 'numero_bl', 'statut'
     )
 
-    # Générer les 5 dernières années dynamiquement
-    current_year = date.today().year
-    last_five_years = [current_year - i for i in range(5)]
-
-    # Passer les données au template
+    # Contexte
     context = {
         'selected_date': selected_date,
         'selected_month': selected_month,
         'selected_year': selected_year,
+        'selected_camion_id': selected_camion_id,
         'selected_date_obj': selected_date_obj,
         'filter_type': filter_type,
         'total_tonnage': total_tonnage,
@@ -324,7 +324,8 @@ def dashboard(request):
         'tonnage_values': json.dumps(tonnage_values[::-1]),
         'montant_values': json.dumps(montant_values[::-1]),
         'livraisons_mois': livraisons_mois,
-        'last_five_years': last_five_years,
+        'last_five_years': [date.today().year - i for i in range(5)],
+        'camions': camions,
     }
 
     return render(request, 'gestion/dashboard.html', context)
