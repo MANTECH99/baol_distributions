@@ -18,17 +18,19 @@
             top: 0;
             left: 0;
             background: white;
-            padding-top: 60px; /* Descendre tout le sidebar */
+            padding-top: 60px;
             box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
             text-align: center;
+            z-index: 1000;
+            transition: transform 0.3s ease-in-out;
         }
         .sidebar img {
-            width: 185px; /* Taille du logo */
-            margin-bottom: 40px; /* Descendre le logo encore plus */
-                        margin-top: -40px; /* Descendre le logo encore plus */
+            width: 185px;
+            margin-bottom: 40px;
+            margin-top: -40px;
         }
         .sidebar nav {
-            margin-top: -80px; /* Réduction de l'espace après le logo */
+            margin-top: -80px;
         }
         .sidebar a {
             padding: 12px;
@@ -38,8 +40,8 @@
             display: flex;
             align-items: center;
             justify-content: center;
-                        border-radius: 8px; /* Coins arrondis */
-            margin: 10px; /* Espacement */
+            border-radius: 8px;
+            margin: 10px;
             transition: background 0.3s, color 0.3s;
         }
         .sidebar a i {
@@ -54,7 +56,7 @@
         .sidebar a.active {
             background: var(--bs-primary);
             color: white;
-            border-radius: 8px; /* Arrondi des coins */
+            border-radius: 8px;
         }
         .sidebar a.active i {
             color: white;
@@ -64,6 +66,7 @@
         .content {
             margin-left: 170px;
             padding: 20px;
+            transition: margin-left 0.3s ease-in-out;
         }
 
         /* Navbar */
@@ -91,12 +94,51 @@
         .top-navbar input {
             width: 250px;
         }
+
+        /* Bouton pour afficher/masquer la sidebar sur mobile */
+        .sidebar-toggle {
+            display: none;
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            z-index: 1100;
+            background: var(--bs-primary);
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        /* Styles pour les écrans mobiles */
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+            .sidebar.active {
+                transform: translateX(0);
+            }
+            .content {
+                margin-left: 0;
+            }
+            .sidebar-toggle {
+                display: block;
+            }
+            .top-navbar input {
+                width: 150px;
+            }
+        }
     </style>
 </head>
 <body>
 
+    <!-- Bouton pour afficher/masquer la sidebar sur mobile -->
+    <button class="sidebar-toggle" onclick="toggleSidebar()">
+        <i class="fas fa-bars"></i>
+    </button>
+
     <!-- Sidebar -->
-    <div class="sidebar">
+    <div class="sidebar" id="sidebar">
         <!-- Logo -->
         <img src="/static/images/logos.png" alt="Logo">
 
@@ -137,7 +179,7 @@
     </nav>
 
     <!-- Contenu principal -->
-    <div class="content">
+    <div class="content" id="content">
         {% block content %}
         {% endblock %}
     </div>
@@ -146,5 +188,14 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
+    <script>
+        // Fonction pour afficher/masquer la sidebar sur mobile
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const content = document.getElementById('content');
+            sidebar.classList.toggle('active');
+            content.classList.toggle('active');
+        }
+    </script>
 </body>
 </html>
