@@ -12,7 +12,7 @@ class Camion(models.Model):
 class StatutCamion(models.Model):
     camion = models.ForeignKey(Camion, on_delete=models.CASCADE)
     date = models.DateField(null=True, blank=True)
-    statut = models.CharField(max_length=50, choices=[
+    STATUT_CHOICES = [
         ("En attente", "En attente"),
         ("En panne", "En panne"),
         ("Travaille pas", "Travaille pas"),
