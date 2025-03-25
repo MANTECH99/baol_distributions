@@ -178,14 +178,22 @@ def liste_livraisons(request):
     return render(request, 'gestion/livraisons.html', context)
 
 
+from django.shortcuts import get_object_or_404, redirect, render
+from django.utils import timezone
+from .models import Camion, StatutCamion
+
 def modifier_statut_camion(request, camion_id):
     camion = get_object_or_404(Camion, id=camion_id)
     date_str = request.GET.get('date')
-
+    
+    # Initialisation par défaut
+    date = timezone.now().date()
+    
     try:
-        date = datetime.strptime(date_str, "%Y-%m-%d").date() if date_str else date.today()
+        if date_str:
+            date = datetime.strptime(date_str, "%Y-%m-%d").date()
     except ValueError:
-        date = date.today()
+        pass  # Garde la valeur par défaut si le parsing échoue
 
     # Récupère le statut existant ou None
     statut_camion = StatutCamion.objects.filter(camion=camion, date=date).first()
@@ -207,9 +215,8 @@ def modifier_statut_camion(request, camion_id):
     return render(request, "gestion/modifier_statut_camion.html", {
         "camion": camion,
         "date": date,
-        "statut_camion": statut_camion  # Peut être None
+        "statut_camion": statut_camion
     })
-
 
 
 from django.http import JsonResponse, HttpResponse
