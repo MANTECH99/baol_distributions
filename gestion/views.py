@@ -152,17 +152,8 @@ def liste_livraisons(request):
     # Récupérer les statuts des camions
     statuts_camions = {statut.camion.id: statut for statut in StatutCamion.objects.all()}
 
-    # Récupération des statuts par camion et date
-    statuts_par_date = {}
-    for camion in camions:
-        statuts_par_date[camion.id] = {}
-        for day in date_range:
-            statut = StatutCamion.objects.filter(camion=camion, date=day).first()
-            statuts_par_date[camion.id][day] = statut.get_statut_display() if statut else "En attente"
-
     # Préparer le contexte pour le template
     context = {
-        'statuts_par_date': statuts_par_date,
         'livraisons': livraisons,
         'camions': camions,
         'livraisons_par_camion_et_date': livraisons_par_camion_et_date,
@@ -177,39 +168,17 @@ def liste_livraisons(request):
 
     return render(request, 'gestion/livraisons.html', context)
 
-
 def modifier_statut_camion(request, camion_id):
     camion = get_object_or_404(Camion, id=camion_id)
-    date_str = request.GET.get('date')
-
-    try:
-        date = datetime.strptime(date_str, "%Y-%m-%d").date() if date_str else date.today()
-    except ValueError:
-        date = date.today()
-
-    # Récupère le statut existant ou None
-    statut_camion = StatutCamion.objects.filter(camion=camion, date=date).first()
 
     if request.method == "POST":
         statut = request.POST.get("statut")
-        # Crée ou met à jour le statut
-        if statut_camion:
-            statut_camion.statut = statut
-            statut_camion.save()
-        else:
-            StatutCamion.objects.create(
-                camion=camion,
-                date=date,
-                statut=statut
-            )
+        statut_camion, created = StatutCamion.objects.get_or_create(camion=camion)
+        statut_camion.statut = statut
+        statut_camion.save()
         return redirect("liste_livraisons")
 
-    return render(request, "gestion/modifier_statut_camion.html", {
-        "camion": camion,
-        "date": date,
-        "statut_camion": statut_camion  # Peut être None
-    })
-
+    return render(request, "gestion/modifier_statut_camion.html", {"camion": camion})
 
 
 
