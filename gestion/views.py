@@ -178,14 +178,12 @@ def liste_livraisons(request):
     return render(request, 'gestion/livraisons.html', context)
 
 
-# views.py
 def modifier_statut_camion(request, camion_id):
     camion = get_object_or_404(Camion, id=camion_id)
-    date = request.GET.get('date')  # Récupérez la date depuis l'URL
+    date = request.GET.get('date')
 
     if request.method == "POST":
         statut = request.POST.get("statut")
-        # Créez ou mettez à jour le statut pour cette date spécifique
         statut_camion, created = StatutCamion.objects.get_or_create(
             camion=camion,
             date=date,
@@ -194,13 +192,27 @@ def modifier_statut_camion(request, camion_id):
         if not created:
             statut_camion.statut = statut
             statut_camion.save()
+
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return JsonResponse({'success': True})
         return redirect("liste_livraisons")
 
-    # Passez la date au template
-    return render(request, "gestion/modifier_statut_camion.html", {
+    # Passez la date et les choix de statut au template
+    STATUT_CHOICES = [
+        ("En attente", "En attente"),
+        ("En panne", "En panne"),
+        ("Travaille pas", "Travaille pas"),
+    ]
+
+    context = {
         "camion": camion,
-        "date": date
-    })
+        "date": date,
+        "STATUT_CHOICES": STATUT_CHOICES
+    }
+
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        return render(request, "gestion/partials/statut_camion_form.html", context)
+    return render(request, "gestion/modifier_statut_camion.html", context)
 
 from django.http import JsonResponse, HttpResponse
 from django.template.loader import render_to_string
