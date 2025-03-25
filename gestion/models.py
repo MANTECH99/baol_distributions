@@ -11,11 +11,11 @@ class Camion(models.Model):
 
 class StatutCamion(models.Model):
     camion = models.OneToOneField(Camion, on_delete=models.CASCADE, related_name="statut_camion")
-
+    date = models.DateField(null=True, blank=True)
     STATUT_CHOICES = [
-        ('attente', 'Attente'),
-        ('panne', 'Panne'),
-        ('off', 'Off'),
+        ("En attente", "En attente"),
+        ("En panne", "En panne"),
+        ("Travaille pas", "Travaille pas"),
     ]
 
     statut = models.CharField(max_length=20, choices=STATUT_CHOICES, default='attente')
