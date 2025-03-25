@@ -132,9 +132,12 @@
                                             <i class="fas fa-plus text-white"></i> Ajouter
                                         </a>
                                         {% if camion.id %}
-<a href="{% url 'modifier_statut_camion' camion.id %}?date={{ day|date:'Y-m-d' }}" class="btn btn-info btn-sm">
+<!-- Par ceci -->
+<button class="btn btn-info btn-sm btn-edit-statut"
+        data-camion-id="{{ camion.id }}"
+        data-date="{{ day|date:'Y-m-d' }}">
     <i class="fas fa-edit text-white"></i> Statut
-</a>
+</button>
                                         {% endif %}
                                     </div>
                                 </td>
@@ -157,6 +160,23 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body" id="modalEditContent">
+                <!-- Le formulaire va être chargé ici -->
+            </div>
+        </div>
+    </div>
+</div>
+
+    <!-- Modal pour modifier le statut du camion -->
+<div class="modal fade" id="modalEditStatut" tabindex="-1" aria-labelledby="modalEditStatutLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalEditStatutLabel">
+                    <i class="fas fa-truck text-primary"></i> Modifier Statut Camion
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="modalEditStatutContent">
                 <!-- Le formulaire va être chargé ici -->
             </div>
         </div>
@@ -210,6 +230,52 @@ $(document).ready(function() {
                 console.log("Erreur lors de la modification: ", xhr.responseText);
             }
         });
+    });
+});
+
+
+// Gestion du clic sur le bouton de modification de statut
+$(document).on("click", ".btn-edit-statut", function() {
+    var camionId = $(this).data("camion-id");
+    var date = $(this).data("date");
+
+    $.ajax({
+        url: "/modifier-statut-camion/" + camionId + "/?date=" + date,
+        type: "GET",
+        headers: { "X-Requested-With": "XMLHttpRequest" },
+        success: function(response) {
+            $("#modalEditStatutContent").html(response);
+            $("#modalEditStatut").modal("show");
+        },
+        error: function(xhr, status, error) {
+            console.log("Erreur AJAX: ", xhr.responseText);
+        }
+    });
+});
+
+// Gestion de la soumission du formulaire de statut
+$(document).on("submit", "#editStatutForm", function(event) {
+    event.preventDefault();
+
+    var form = $(this);
+    var url = form.attr("action");
+
+    $.ajax({
+        url: url,
+        type: "POST",
+        data: form.serialize(),
+        headers: { "X-Requested-With": "XMLHttpRequest" },
+        success: function(response) {
+            if (response.success) {
+                $("#modalEditStatut").modal("hide");
+                location.reload(); // Recharge la page pour voir les modifications
+            } else {
+                $("#modalEditStatutContent").html(response);
+            }
+        },
+        error: function(xhr, status, error) {
+            console.log("Erreur lors de la modification du statut: ", xhr.responseText);
+        }
     });
 });
 </script>
