@@ -125,16 +125,16 @@
                                 <td>{{ camion.numero }}</td>
                                 <td>{{ camion.telephone }}</td>
                                 <td colspan="6" class="text-center">Aucune livraison</td>
-                                <td>{{ statuts_camions|get_item:camion.id|default:"En attente" }}</td>
+                                <td>{{ statuts_par_date|get_item:camion.id|get_item:day|default:"En attente" }}</td>
                                 <td>
                                     <div class="d-flex gap-2">
                                         <a href="#" class="btn btn-success btn-sm" onclick="afficherIframe('{{ day|date:"Y-m-d" }}', '{{ camion.id }}')">
                                             <i class="fas fa-plus text-white"></i> Ajouter
                                         </a>
                                         {% if camion.id %}
-                                            <a href="{% url 'modifier_statut_camion' camion.id %}" class="btn btn-info btn-sm">
-                                                <i class="fas fa-edit text-white"></i> Statut
-                                            </a>
+<a href="{% url 'modifier_statut_camion' camion.id %}?date={{ day|date:'Y-m-d' }}" class="btn btn-info btn-sm">
+    <i class="fas fa-edit text-white"></i> Statut
+</a>
                                         {% endif %}
                                     </div>
                                 </td>
