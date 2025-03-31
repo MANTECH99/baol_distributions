@@ -18,3 +18,12 @@ class LivraisonForm(forms.ModelForm):
         if tonnage < 0:
             raise forms.ValidationError("Le tonnage ne peut pas être négatif.")
         return tonnage
+
+class RapportForm(forms.ModelForm):
+    class Meta:
+        model = Rapport
+        fields = ['mois', 'fichier']
+        widgets = {
+            'mois': forms.DateInput(attrs={'type': 'month', 'class': 'form-control'}),
+        }
+
