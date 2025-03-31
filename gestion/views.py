@@ -540,3 +540,80 @@ def user_login(request):
             error = "Identifiant ou mot de passe incorrect."
 
     return render(request, "registration/login_register.html", {"login_error": error})
+
+
+
+
+from django.shortcuts import render, redirect
+from .models import Rapport
+from django.http import FileResponse
+from .forms import RapportForm
+
+
+def liste_rapports(request):
+    mois_selectionne = request.GET.get('mois')
+    if mois_selectionne:
+        rapports = Rapport.objects.filter(mois__month=mois_selectionne.split('-')[1],
+                                          mois__year=mois_selectionne.split('-')[0])
+    else:
+        rapports = Rapport.objects.all()
+
+    return render(request, 'gestion/rapports.html', {'rapports': rapports})
+
+
+def telecharger_rapport(request, rapport_id):
+    rapport = Rapport.objects.get(id=rapport_id)
+    return FileResponse(rapport.fichier.open('rb'), as_attachment=True, filename=rapport.fichier.name)
+
+
+from datetime import datetime
+from django.http import JsonResponse
+
+
+def ajouter_rapport(request):
+    if request.method == 'POST':
+        print("📥 Requête POST reçue")
+        print("🔍 Données POST :", request.POST)
+
+        # Vérifier si 'mois' est présent et le reformater
+        mois_str = request.POST.get('mois')
+        if mois_str:
+            try:
+                # Transformer 'YYYY-MM' en 'YYYY-MM-01' pour être une date valide
+                mois_corrige = datetime.strptime(mois_str + '-01', '%Y-%m-%d').date()
+
+                # Remplacer la valeur POST (hack Django pour éviter l'erreur)
+                post_data = request.POST.copy()
+                post_data['mois'] = mois_corrige
+
+                # Initialiser le formulaire avec la valeur corrigée
+                form = RapportForm(post_data, request.FILES)
+
+                if form.is_valid():
+                    form.save()
+                    print("✅ Rapport enregistré avec succès")
+                    return redirect('liste_rapports')
+                else:
+                    print("❌ Formulaire invalide :", form.errors)
+                    return JsonResponse({"error": form.errors}, status=400)
+
+            except ValueError as e:
+                print(f"❌ Erreur conversion date : {e}")
+                return JsonResponse({"error": f"Erreur conversion date : {str(e)}"}, status=400)
+
+        else:
+            print("⚠ ERREUR : 'mois' est vide")
+            return JsonResponse({"error": "Le champ 'mois' est vide"}, status=400)
+
+    else:
+        form = RapportForm()
+
+    return render(request, 'gestion/ajouter_rapport.html', {'form': form})
+
+
+from django.shortcuts import get_object_or_404
+
+def supprimer_rapport(request, rapport_id):
+    rapport = get_object_or_404(Rapport, id=rapport_id)
+    rapport.delete()
+    return redirect('liste_rapports')
