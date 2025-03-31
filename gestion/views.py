@@ -92,6 +92,7 @@ def liste_livraisons(request):
     selected_date = request.GET.get('date', date.today().strftime('%Y-%m-%d'))
     selected_month = request.GET.get('month', date.today().strftime('%Y-%m'))
     selected_camion_id = request.GET.get('camion')
+    tonnage_filter = request.GET.get('tonnage_filter')  # Nouveau paramètre
 
     # Initialiser les variables
     selected_date_obj = None
@@ -131,6 +132,10 @@ def liste_livraisons(request):
     # Appliquer le filtre par camion si un camion est sélectionné
     if selected_camion_id and selected_camion_id != "None":
         livraisons = livraisons.filter(camion_id=selected_camion_id)
+
+        # Appliquer le filtre par tonnage si sélectionné
+    if tonnage_filter == 'lt5':
+        livraisons = livraisons.filter(tonnage__lt=5)
 
     # Trier les livraisons par date
     livraisons = livraisons.order_by('-date')
@@ -403,6 +408,7 @@ def exporter_livraisons_excel(request):
     selected_date = request.GET.get('date')
     selected_month = request.GET.get('month')
     selected_camion_id = request.GET.get('camion')  # Récupérer l'ID du camion
+    tonnage_filter = request.GET.get('tonnage_filter')  # Nouveau paramètre
 
     logger.info(f"Filter type: {filter_type}, Date: {selected_date}, Month: {selected_month}, Camion: {selected_camion_id}")
 
@@ -431,6 +437,11 @@ def exporter_livraisons_excel(request):
         except ValueError:
             logger.error("Format de mois invalide")
             livraisons = Livraison.objects.none()
+
+        # Appliquer le filtre par tonnage si sélectionné
+    if tonnage_filter == 'lt5':
+        livraisons = livraisons.filter(tonnage__lt=5)
+        logger.info(f"Filtrage par tonnage <5: {livraisons.count()} livraisons")
 
     # Trier les livraisons par date
     livraisons = livraisons.order_by('-date')
@@ -475,9 +486,22 @@ def exporter_livraisons_excel(request):
     # Ajouter les totaux en bas du tableau
     ws.append(["Total", "", "", total_tonnage, "", "", total_montant, "", "", ""])
 
+    # Créer le nom du fichier en fonction des filtres
+    filename_parts = []
+    if selected_camion_id:
+        filename_parts.append(f"camion_{selected_camion_id}")
+    if selected_date:
+        filename_parts.append(f"date_{selected_date}")
+    elif selected_month:
+        filename_parts.append(f"mois_{selected_month}")
+    if tonnage_filter == 'lt5':
+        filename_parts.append("tonnage_lt5")
+    filename = f"livraisons_{'_'.join(filename_parts) or 'all'}.xlsx"
+
+
     # Créer une réponse HTTP avec le fichier Excel
     response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-    response['Content-Disposition'] = f'attachment; filename=livraisons_{selected_camion_id or "all"}_{selected_date or selected_month or "all"}.xlsx'
+    response['Content-Disposition'] = f'attachment; filename={filename}'
     wb.save(response)
 
     return response
