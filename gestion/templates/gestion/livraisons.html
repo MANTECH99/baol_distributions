@@ -33,7 +33,20 @@
         <option value="month" {% if filter_type == 'month' %}selected{% endif %}>Mois spécifique</option>
     </select>&nbsp;&nbsp;&nbsp;
 
-<a href="{% url 'exporter_livraisons_excel' %}?filter_type={{ filter_type }}&date={{ selected_date }}&month={{ selected_month }}&camion={{ selected_camion_id|default:'' }}"
+
+        <!-- Nouveau bouton pour le filtre tonnage -->
+    <form method="GET" class="d-inline-block">
+        <input type="hidden" name="filter_type" value="{{ filter_type }}">
+        <input type="hidden" name="date" value="{{ selected_date }}">
+        <input type="hidden" name="month" value="{{ selected_month }}">
+        <input type="hidden" name="camion" value="{{ selected_camion_id|default:'' }}">
+        <input type="hidden" name="tonnage_filter" value="{% if tonnage_filter == 'lt5' %}lt5{% endif %}">
+        <button type="submit" name="tonnage_filter" value="lt5" class="btn btn-info ml-2">
+            <i class="fas fa-filter text-white"></i> Tonnage < 5
+        </button>
+    </form>
+
+<a href="{% url 'exporter_livraisons_excel' %}?filter_type={{ filter_type }}&date={{ selected_date }}&month={{ selected_month }}&camion={{ selected_camion_id|default:'' }}&tonnage_filter={{ tonnage_filter|default:'' }}"
    class="btn btn-success">
     <i class="fas fa-file-excel text-white"></i> Exporter en Excel
 </a>
