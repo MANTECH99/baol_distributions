@@ -60,3 +60,13 @@ class Livraison(models.Model):
 
     def __str__(self):
         return f"Livraison {self.date} - {self.camion.numero}"
+
+
+class Rapport(models.Model):
+    mois = models.DateField()  # Stocke uniquement la date (mois et année)
+    fichier = models.FileField(upload_to='rapports/')
+    date_ajout = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Rapport {self.mois.strftime('%B %Y')}"  # Format: "Mars 2025"
+
