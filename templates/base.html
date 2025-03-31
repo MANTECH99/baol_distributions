@@ -108,6 +108,9 @@
             <a href="{% url 'liste_livraisons' %}" class="{% if request.resolver_match.url_name == 'liste_livraisons' %}active{% endif %}">
                 <i class="fas fa-truck"></i> Livraisons
             </a>
+                    <a href="{% url 'liste_rapports' %}" class="{% if request.resolver_match.url_name == 'liste_rapports' %}active{% endif %}">
+    <i class="fas fa-file-alt"></i> Rapports
+</a>
         </nav>
     </div>
 
