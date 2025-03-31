@@ -178,6 +178,7 @@ def liste_livraisons(request):
         'selected_date_obj': selected_date_obj,
         'filter_type': filter_type,
         'date_range': date_range,
+        'tonnage_filter': tonnage_filter,  # Nouvelle variable
     }
 
     return render(request, 'gestion/livraisons.html', context)
