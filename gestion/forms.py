@@ -1,5 +1,5 @@
 from django import forms
-from .models import Livraison
+from .models import Livraison, Rapport
 
 class LivraisonForm(forms.ModelForm):
     class Meta:
