@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <div class="container-fluid mt-5">
+<h2>Rapports Mensuels</h2>
+
+<!-- Formulaire de filtre par mois -->
+<form method="get" class="d-flex align-items-center gap-2">
+    <label for="mois" class="me-2">Filtrer par mois :</label>
+    <input type="month" name="mois" class="form-control w-auto" value="{{ request.GET.mois }}">
+    <button type="submit" class="btn btn-primary">Filtrer</button>
+</form>
+
+<!-- Table des rapports -->
+<table class="table mt-3">
+    <thead>
+        <tr>
+            <th>Mois</th>
+            <th>Fichier</th>
+            <th>Date d'ajout</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for rapport in rapports %}
+        <tr>
+            <td>{{ rapport.mois }}</td>
+            <td>{{ rapport.fichier.name }}</td>
+            <td>{{ rapport.date_ajout|date:"d M Y" }}</td>
+            <td><a href="{% url 'telecharger_rapport' rapport.id %}" class="btn btn-success">Télécharger</a>
+            <a href="{% url 'supprimer_rapport' rapport.id %}"
+   class="btn btn-danger"
+   onclick="return confirmSuppression(event, '{{ rapport.mois|date:"F Y" }}');">
+    Supprimer
+</a>
+</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<!-- Bouton pour ajouter un rapport (uniquement pour l'admin) -->
+
+    <a href="{% url 'ajouter_rapport' %}" class="btn btn-primary">Ajouter un Rapport</a>
+<script>
+function confirmSuppression(event, mois) {
+    event.preventDefault();  // Empêche la suppression immédiate
+    if (confirm(`Voulez-vous vraiment supprimer le rapport de ${mois} ?`)) {
+        window.location.href = event.target.href;  // Exécute la suppression si confirmé
+    }
+}
+</script>
+
+    </div>
+{% endblock %}
