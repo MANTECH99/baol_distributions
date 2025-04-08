@@ -116,7 +116,8 @@
                                     <td>{{ livraison.montant }}</td>
                                     <td>{{ livraison.chiffonage }}</td>
                                     <td>{{ livraison.numero_bl }}</td>
-                                    <td>{{ livraison.get_statut_display }}</td>
+                                    <td> <span class="badge bg-success"> <i class="bi bi-check-circle-fill"></i> {{ livraison.get_statut_display }}</span></td>
+
                                     <td>
                                         <div class="d-flex gap-2">
                                             <a href="#" class="btn btn-warning btn-sm btn-edit-livraison" data-id="{{ livraison.id }}">
@@ -139,7 +140,18 @@
                                 <td>{{ camion.numero }}</td>
                                 <td>{{ camion.telephone }}</td>
                                 <td colspan="6" class="text-center">Aucune livraison</td>
-                                <td>{{ statuts_par_date|get_item:camion.id|get_item:day|default:"En attente" }}</td>
+                                <td>{% with statuts_par_date|get_item:camion.id|get_item:day as statut_du_jour %}
+        {% if statut_du_jour == 'En attente' or statut_du_jour == None %}
+            <span class="badge bg-primary"><i class="bi bi-hourglass-split"></i> En attente</span>
+        {% elif statut_du_jour == 'En panne' %}
+            <span class="badge bg-danger"><i class="bi bi-exclamation-triangle-fill"></i> En panne</span>
+        {% elif statut_du_jour == 'Travaille pas' %}
+            <span class="badge bg-warning text-dark"><i class="bi bi-slash-circle"></i>  Travaille pas</span>
+        {% else %}
+            <span class="badge bg-warning text-dark">{{ statut_du_jour }}</span>
+        {% endif %}
+    {% endwith %}
+</td>
                                 <td>
                                     <div class="d-flex gap-2">
                                         <a href="#" class="btn btn-success btn-sm" onclick="afficherIframe('{{ day|date:"Y-m-d" }}', '{{ camion.id }}')">
