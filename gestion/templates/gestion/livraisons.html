@@ -86,19 +86,20 @@
     <table class="table table-striped">
         <thead class="table-green">
             <tr>
-                <th style="width: 16%;"><i class="fas fa-calendar text-info"></i> Date</th>
-                <th style="width: 11%;"><i class="fas fa-truck text-primary"></i> Camion</th>
-                <th style="width: 11%;"><i class="fas fa-phone text-success"></i> Téléphone</th>
-                <th style="width: 10%;"><i class="fas fa-weight-hanging text-warning"></i> Tonnage</th>
-                <th style="width: 8%;"><i class="fas fa-dollar-sign text-danger"></i> P U</th>
-                <th style="width: 10%;"><i class="fas fa-box text-secondary"></i> Quantité</th>
-                <th style="width: 11%;"><i class="fas fa-money-bill-wave text-success"></i> Montant</th>
-                <th style="width: 12%;"><i class="fas fa-recycle text-info"></i> Chiffonage</th>
-                <th style="width: 10%;"><i class="fas fa-barcode text-primary"></i> N° BL</th>
-                <th style="width: 10%;"><i class="fas fa-info-circle text-warning"></i> Statut</th>
-                <th style="width: 16%;"><i class="fas fa-cogs text-secondary"></i> Actions</th>
+                <th><i class="fas fa-calendar text-info"></i> Date</th>
+                <th><i class="fas fa-truck text-primary"></i> Camion</th>
+                <th><i class="fas fa-phone text-success"></i> Téléphone</th>
+                <th><i class="fas fa-weight-hanging text-warning"></i> Tonnage</th>
+                <th><i class="fas fa-dollar-sign text-danger"></i> P U</th>
+                <th><i class="fas fa-box text-secondary"></i> Quantité</th>
+                <th><i class="fas fa-money-bill-wave text-success"></i> Montant</th>
+                <th><i class="fas fa-recycle text-info"></i> Chiffonage</th>
+                <th><i class="fas fa-barcode text-primary"></i> N° BL</th>
+                <th><i class="fas fa-info-circle text-warning"></i> Statut</th>
+                <th class="text-nowrap"><i class="fas fa-cogs text-secondary"></i> Actions</th>
             </tr>
         </thead>
+
         <tbody>
             {% for camion in camions %}
                 {% for day in date_range %}
