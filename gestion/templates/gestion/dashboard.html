@@ -161,7 +161,7 @@ function showFilterForm() {
                     <td>{{ livraison.montant }}</td>
                     <td>{{ livraison.chiffonage }}</td>
                     <td>{{ livraison.numero_bl }}</td>
-                    <td>{{ livraison.statut }}</td>
+                    <td><span class="badge bg-success"><i class="bi bi-check-circle-fill"></i> {{ livraison.statut }}</span></td>
                 </tr>
             {% empty %}
                 <tr>
