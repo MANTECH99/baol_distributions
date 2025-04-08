@@ -119,14 +119,14 @@
                                     <td>
                                         <div class="d-flex gap-2">
                                             <a href="#" class="btn btn-warning btn-sm btn-edit-livraison" data-id="{{ livraison.id }}">
-                                                <i class="fas fa-edit text-white"></i> Modifier
+                                                <i class="fas fa-edit text-white"></i> 
                                             </a>
                                             <a href="{% url 'supprimer_livraison' livraison.id %}" class="btn btn-danger btn-sm"
                                                onclick="return confirm('Voulez-vous vraiment supprimer cette livraison ?');">
-                                                <i class="fas fa-trash text-white"></i> Supprimer
+                                                <i class="fas fa-trash text-white"></i> 
                                             </a>
                                             <a href="#" class="btn btn-success btn-sm" onclick="afficherIframe('{{ day|date:"Y-m-d" }}', '{{ camion.id }}')">
-                                                <i class="fas fa-plus text-white"></i> Ajouter
+                                                <i class="fas fa-plus text-white"></i> 
                                             </a>
                                         </div>
                                     </td>
@@ -142,14 +142,14 @@
                                 <td>
                                     <div class="d-flex gap-2">
                                         <a href="#" class="btn btn-success btn-sm" onclick="afficherIframe('{{ day|date:"Y-m-d" }}', '{{ camion.id }}')">
-                                            <i class="fas fa-plus text-white"></i> Ajouter
+                                            <i class="fas fa-plus text-white"></i> 
                                         </a>
                                         {% if camion.id %}
 <!-- Par ceci -->
 <button class="btn btn-info btn-sm btn-edit-statut"
         data-camion-id="{{ camion.id }}"
         data-date="{{ day|date:'Y-m-d' }}">
-    <i class="fas fa-edit text-white"></i> Statut
+    <i class="fas fa-edit text-white"></i> 
 </button>
                                         {% endif %}
                                     </div>
