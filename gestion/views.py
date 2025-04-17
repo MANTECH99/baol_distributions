@@ -403,7 +403,6 @@ import logging
 from openpyxl.styles import PatternFill, Font
 
 logger = logging.getLogger(__name__)
-
 def exporter_livraisons_excel(request):
     # Récupérer les paramètres de filtre
     filter_type = request.GET.get('filter_type')
@@ -466,27 +465,18 @@ def exporter_livraisons_excel(request):
                         ]
                         ws.append(ligne)
 
-                        # Appliquer un style spécial selon le statut
+                        # Appliquer un style spécial à la cellule de la colonne "Statut" uniquement
                         last_row = ws.max_row
+                        statut_cell = ws.cell(row=last_row, column=10)  # colonne 10 = "Statut"
 
-                        # Couleurs de fond selon le statut
+                        # Couleurs spécifiques selon le statut
                         if statut_affiche == "En panne":
-                            fill_color = "FF9999"  # rouge clair
+                            statut_cell.fill = PatternFill(start_color="FF9999", end_color="FF9999", fill_type="solid")  # rouge clair
                         elif statut_affiche == "Ne travaille pas":
-                            fill_color = "FFF699"  # jaune clair
+                            statut_cell.fill = PatternFill(start_color="FFF699", end_color="FFF699", fill_type="solid")  # jaune clair
                         elif statut_affiche == "En attente":
-                            fill_color = "B4C6E7"  # bleu clair
-                        else:
-                            fill_color = None
+                            statut_cell.fill = PatternFill(start_color="B4C6E7", end_color="B4C6E7", fill_type="solid")  # bleu clair
 
-                        # Appliquer le style si nécessaire
-                        if fill_color:
-                            fill = PatternFill(start_color=fill_color, end_color=fill_color, fill_type="solid")
-                            font = Font(bold=True)
-                            for col in range(1, len(ligne) + 1):
-                                cell = ws.cell(row=last_row, column=col)
-                                cell.fill = fill
-                                cell.font = font
 
         except ValueError:
             logger.error("Format de mois invalide")
