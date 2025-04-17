@@ -393,13 +393,14 @@ def dashboard(request):
 
 
 
-
-logger = logging.getLogger(__name__)
-from django.http import HttpResponse
+from django.utils import timezone
+from calendar import monthrange
 from openpyxl import Workbook
 from datetime import datetime
-from .models import Livraison
+from django.http import HttpResponse
+from .models import Livraison, Camion
 import logging
+from openpyxl.styles import PatternFill, Font
 
 logger = logging.getLogger(__name__)
 
@@ -408,86 +409,129 @@ def exporter_livraisons_excel(request):
     filter_type = request.GET.get('filter_type')
     selected_date = request.GET.get('date')
     selected_month = request.GET.get('month')
-    selected_camion_id = request.GET.get('camion')  # Récupérer l'ID du camion
-    tonnage_filter = request.GET.get('tonnage_filter')  # Nouveau paramètre
+    selected_camion_id = request.GET.get('camion')
+    tonnage_filter = request.GET.get('tonnage_filter')
 
-    logger.info(f"Filter type: {filter_type}, Date: {selected_date}, Month: {selected_month}, Camion: {selected_camion_id}")
+    logger.info(f"Filter type: {filter_type}, Date: {selected_date}, Month: {selected_month}, Camion: {selected_camion_id}, Tonnage: {tonnage_filter}")
 
-    # Filtrer les livraisons en fonction des filtres sélectionnés
-    livraisons = Livraison.objects.all()
-
-    # Appliquer le filtre par camion si un camion est sélectionné
-    if selected_camion_id:
-        livraisons = livraisons.filter(camion_id=selected_camion_id)
-        logger.info(f"Filtrage par camion ({selected_camion_id}): {livraisons.count()} livraisons")
-
-    # Appliquer le filtre par date ou mois
-    if filter_type == 'date' and selected_date:
-        try:
-            selected_date_obj = datetime.strptime(selected_date, "%Y-%m-%d").date()
-            livraisons = livraisons.filter(date=selected_date_obj)
-            logger.info(f"Filtrage par date ({selected_date_obj}): {livraisons.count()} livraisons")
-        except ValueError:
-            logger.error("Format de date invalide")
-            livraisons = Livraison.objects.none()
-    elif filter_type == 'month' and selected_month:
-        try:
-            year, month = map(int, selected_month.split('-'))
-            livraisons = livraisons.filter(date__year=year, date__month=month)
-            logger.info(f"Filtrage par mois ({year}-{month}): {livraisons.count()} livraisons")
-        except ValueError:
-            logger.error("Format de mois invalide")
-            livraisons = Livraison.objects.none()
-
-        # Appliquer le filtre par tonnage si sélectionné
-    if tonnage_filter == 'lt5':
-        livraisons = livraisons.filter(tonnage__lt=5)
-        logger.info(f"Filtrage par tonnage <5: {livraisons.count()} livraisons")
-
-    # Trier les livraisons par date
-    livraisons = livraisons.order_by('-date')
-
-    # Créer un nouveau classeur Excel
     wb = Workbook()
     ws = wb.active
 
-    # Ajouter les en-têtes de colonnes
     headers = [
         "Date", "Camion", "Numéro Téléphone", "Tonnage", "Prix Unitaire",
         "Quantité", "Montant", "Chiffonage", "N° BL", "Statut"
     ]
     ws.append(headers)
-    # Variables pour calculer les totaux
+
     total_tonnage = 0
     total_montant = 0
 
-    # Ajouter les données des livraisons
-    for livraison in livraisons:
-        ws.append([
-            livraison.date.strftime("%Y-%m-%d"),
-            livraison.camion.numero,
-            livraison.camion.telephone,
-            livraison.tonnage,
-            livraison.prix_unitaire,
-            livraison.quantite,
-            livraison.montant,
-            livraison.chiffonage,
-            livraison.numero_bl,
-            livraison.get_statut_display(),
-        ])
-        # Ajouter au total tonnage et montant
-        total_tonnage += livraison.tonnage
-        total_montant += livraison.montant
+    if filter_type == 'month' and selected_month:
+        try:
+            year, month = map(int, selected_month.split('-'))
+            num_days = monthrange(year, month)[1]
+            camions = Camion.objects.all().order_by('numero')
 
+            for camion in camions:
+                for day in range(1, num_days + 1):
+                    current_date = datetime(year, month, day).date()
+                    livraisons = Livraison.objects.filter(camion=camion, date=current_date)
 
+                    if livraisons.exists():
+                        for livraison in livraisons:
+                            ws.append([
+                                livraison.date.strftime("%d/%m/%Y"),
+                                livraison.camion.numero,
+                                livraison.camion.telephone,
+                                livraison.tonnage,
+                                livraison.prix_unitaire,
+                                livraison.quantite,
+                                livraison.montant,
+                                livraison.chiffonage,
+                                livraison.numero_bl,
+                                livraison.get_statut_display(),
+                            ])
+                            total_tonnage += livraison.tonnage
+                            total_montant += livraison.montant
+                    else:
+                        statut_camion = StatutCamion.objects.filter(camion=camion, date=current_date).first()
+                        statut_affiche = statut_camion.get_statut_display() if statut_camion else "En attente"
 
-    # Ajouter une ligne vide avant les totaux
+                        ligne = [
+                            current_date.strftime("%d/%m/%Y"),
+                            camion.numero,
+                            camion.telephone,
+                            "", "", "", "", "", "",
+                            statut_affiche
+                        ]
+                        ws.append(ligne)
+
+                        # Appliquer un style spécial selon le statut
+                        last_row = ws.max_row
+
+                        # Couleurs de fond selon le statut
+                        if statut_affiche == "En panne":
+                            fill_color = "FF9999"  # rouge clair
+                        elif statut_affiche == "Ne travaille pas":
+                            fill_color = "FFF699"  # jaune clair
+                        elif statut_affiche == "En attente":
+                            fill_color = "B4C6E7"  # bleu clair
+                        else:
+                            fill_color = None
+
+                        # Appliquer le style si nécessaire
+                        if fill_color:
+                            fill = PatternFill(start_color=fill_color, end_color=fill_color, fill_type="solid")
+                            font = Font(bold=True)
+                            for col in range(1, len(ligne) + 1):
+                                cell = ws.cell(row=last_row, column=col)
+                                cell.fill = fill
+                                cell.font = font
+
+        except ValueError:
+            logger.error("Format de mois invalide")
+            return HttpResponse("Format de mois invalide")
+    else:
+        livraisons = Livraison.objects.all()
+
+        if selected_camion_id:
+            livraisons = livraisons.filter(camion_id=selected_camion_id)
+            logger.info(f"Filtrage par camion ({selected_camion_id}): {livraisons.count()} livraisons")
+
+        if filter_type == 'date' and selected_date:
+            try:
+                selected_date_obj = datetime.strptime(selected_date, "%Y-%m-%d").date()
+                livraisons = livraisons.filter(date=selected_date_obj)
+                logger.info(f"Filtrage par date ({selected_date_obj}): {livraisons.count()} livraisons")
+            except ValueError:
+                logger.error("Format de date invalide")
+                livraisons = Livraison.objects.none()
+
+        if tonnage_filter == 'lt5':
+            livraisons = livraisons.filter(tonnage__lt=5)
+            logger.info(f"Filtrage par tonnage <5: {livraisons.count()} livraisons")
+
+        livraisons = livraisons.order_by('camion__numero', 'date')
+
+        for livraison in livraisons:
+            ws.append([
+                livraison.date.strftime("%d/%m/%Y"),
+                livraison.camion.numero,
+                livraison.camion.telephone,
+                livraison.tonnage,
+                livraison.prix_unitaire,
+                livraison.quantite,
+                livraison.montant,
+                livraison.chiffonage,
+                livraison.numero_bl,
+                livraison.get_statut_display(),
+            ])
+            total_tonnage += livraison.tonnage
+            total_montant += livraison.montant
+
     ws.append([])
-
-    # Ajouter les totaux en bas du tableau
     ws.append(["Total", "", "", total_tonnage, "", "", total_montant, "", "", ""])
 
-    # Créer le nom du fichier en fonction des filtres
     filename_parts = []
     if selected_camion_id:
         filename_parts.append(f"camion_{selected_camion_id}")
@@ -499,12 +543,9 @@ def exporter_livraisons_excel(request):
         filename_parts.append("tonnage_lt5")
     filename = f"livraisons_{'_'.join(filename_parts) or 'all'}.xlsx"
 
-
-    # Créer une réponse HTTP avec le fichier Excel
     response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
     response['Content-Disposition'] = f'attachment; filename={filename}'
     wb.save(response)
-
     return response
 
 # Vue pour l'inscription
