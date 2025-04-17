@@ -472,7 +472,7 @@ def exporter_livraisons_excel(request):
                         # Couleurs spécifiques selon le statut
                         if statut_affiche == "En panne":
                             statut_cell.fill = PatternFill(start_color="FF9999", end_color="FF9999", fill_type="solid")  # rouge clair
-                        elif statut_affiche == "Ne travaille pas":
+                        elif statut_affiche == "Travaille pas":
                             statut_cell.fill = PatternFill(start_color="FFF699", end_color="FFF699", fill_type="solid")  # jaune clair
                         elif statut_affiche == "En attente":
                             statut_cell.fill = PatternFill(start_color="B4C6E7", end_color="B4C6E7", fill_type="solid")  # bleu clair
