@@ -396,7 +396,6 @@ def dashboard(request):
     return render(request, 'gestion/dashboard.html', context)
 
 
-
 from django.utils import timezone
 from calendar import monthrange
 from openpyxl import Workbook
@@ -408,6 +407,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+
 def exporter_livraisons_excel(request):
     filter_type = request.GET.get('filter_type')
     selected_date = request.GET.get('date')
@@ -415,7 +415,8 @@ def exporter_livraisons_excel(request):
     selected_camion_id = request.GET.get('camion')
     tonnage_filter = request.GET.get('tonnage_filter')
 
-    logger.info(f"Filter type: {filter_type}, Date: {selected_date}, Month: {selected_month}, Camion: {selected_camion_id}, Tonnage: {tonnage_filter}")
+    logger.info(
+        f"Filter type: {filter_type}, Date: {selected_date}, Month: {selected_month}, Camion: {selected_camion_id}, Tonnage: {tonnage_filter}")
 
     wb = Workbook()
     ws = wb.active
@@ -439,56 +440,84 @@ def exporter_livraisons_excel(request):
                 camions = camions.filter(id=selected_camion_id)
 
             for camion in camions.order_by('numero'):
-                for day in range(1, num_days + 1):
-                    current_date = datetime(year, month, day).date()
-                    livraisons = Livraison.objects.filter(camion=camion, date=current_date)
+                # 🎯 Cas spécial : si tonnage < 5, on ne liste que les jours AVEC livraisons
+                if tonnage_filter == 'lt5':
+                    livraisons = Livraison.objects.filter(
+                        camion=camion,
+                        date__year=year,
+                        date__month=month,
+                        tonnage__lt=5
+                    ).order_by('date')
 
-                    if tonnage_filter == 'lt5':
-                        livraisons = livraisons.filter(tonnage__lt=5)
+                    for livraison in livraisons:
+                        ws.append([
+                            livraison.date.strftime("%d/%m/%Y"),
+                            livraison.camion.numero,
+                            livraison.camion.telephone,
+                            livraison.tonnage,
+                            livraison.prix_unitaire,
+                            livraison.quantite,
+                            livraison.montant,
+                            livraison.chiffonage,
+                            livraison.numero_bl,
+                            livraison.get_statut_display(),
+                        ])
+                        total_tonnage += livraison.tonnage
+                        total_montant += livraison.montant
 
-                    if livraisons.exists():
-                        for livraison in livraisons:
-                            ws.append([
-                                livraison.date.strftime("%d/%m/%Y"),
-                                livraison.camion.numero,
-                                livraison.camion.telephone,
-                                livraison.tonnage,
-                                livraison.prix_unitaire,
-                                livraison.quantite,
-                                livraison.montant,
-                                livraison.chiffonage,
-                                livraison.numero_bl,
-                                livraison.get_statut_display(),
-                            ])
-                            total_tonnage += livraison.tonnage
-                            total_montant += livraison.montant
-                    else:
-                        statut_camion = StatutCamion.objects.filter(camion=camion, date=current_date).first()
-                        statut_affiche = statut_camion.get_statut_display() if statut_camion else "En attente"
+                else:
+                    # 🧠 Cas général : inclure jours sans livraison avec statut
+                    for day in range(1, num_days + 1):
+                        current_date = datetime(year, month, day).date()
+                        livraisons = Livraison.objects.filter(camion=camion, date=current_date)
 
-                        ligne = [
-                            current_date.strftime("%d/%m/%Y"),
-                            camion.numero,
-                            camion.telephone,
-                            "", "", "", "", "", "",
-                            statut_affiche
-                        ]
-                        ws.append(ligne)
+                        if livraisons.exists():
+                            for livraison in livraisons:
+                                ws.append([
+                                    livraison.date.strftime("%d/%m/%Y"),
+                                    livraison.camion.numero,
+                                    livraison.camion.telephone,
+                                    livraison.tonnage,
+                                    livraison.prix_unitaire,
+                                    livraison.quantite,
+                                    livraison.montant,
+                                    livraison.chiffonage,
+                                    livraison.numero_bl,
+                                    livraison.get_statut_display(),
+                                ])
+                                total_tonnage += livraison.tonnage
+                                total_montant += livraison.montant
+                        else:
+                            statut_camion = StatutCamion.objects.filter(camion=camion, date=current_date).first()
+                            statut_affiche = statut_camion.get_statut_display() if statut_camion else "En attente"
 
-                        statut_cell = ws.cell(row=ws.max_row, column=10)
+                            ligne = [
+                                current_date.strftime("%d/%m/%Y"),
+                                camion.numero,
+                                camion.telephone,
+                                "", "", "", "", "", "",
+                                statut_affiche
+                            ]
+                            ws.append(ligne)
 
-                        if statut_affiche == "En panne":
-                            statut_cell.fill = PatternFill(start_color="FF9999", end_color="FF9999", fill_type="solid")
-                        elif statut_affiche == "Travaille pas":
-                            statut_cell.fill = PatternFill(start_color="FFF699", end_color="FFF699", fill_type="solid")
-                        elif statut_affiche == "En attente":
-                            statut_cell.fill = PatternFill(start_color="B4C6E7", end_color="B4C6E7", fill_type="solid")
+                            statut_cell = ws.cell(row=ws.max_row, column=10)
+
+                            if statut_affiche == "En panne":
+                                statut_cell.fill = PatternFill(start_color="FF9999", end_color="FF9999",
+                                                               fill_type="solid")
+                            elif statut_affiche == "Travaille pas":
+                                statut_cell.fill = PatternFill(start_color="FFF699", end_color="FFF699",
+                                                               fill_type="solid")
+                            elif statut_affiche == "En attente":
+                                statut_cell.fill = PatternFill(start_color="B4C6E7", end_color="B4C6E7",
+                                                               fill_type="solid")
 
         except ValueError:
             logger.error("Format de mois invalide")
             return HttpResponse("Format de mois invalide")
 
     else:
+        # 🧾 Cas général (filtre par date ou aucun)
         livraisons = Livraison.objects.all()
 
         if selected_camion_id:
