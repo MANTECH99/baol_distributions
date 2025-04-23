@@ -400,15 +400,15 @@ def dashboard(request):
 from django.utils import timezone
 from calendar import monthrange
 from openpyxl import Workbook
+from openpyxl.styles import PatternFill
 from datetime import datetime
 from django.http import HttpResponse
-from .models import Livraison, Camion
+from .models import Livraison, Camion, StatutCamion
 import logging
-from openpyxl.styles import PatternFill, Font
 
 logger = logging.getLogger(__name__)
+
 def exporter_livraisons_excel(request):
-    # Récupérer les paramètres de filtre
     filter_type = request.GET.get('filter_type')
     selected_date = request.GET.get('date')
     selected_month = request.GET.get('month')
@@ -433,12 +433,18 @@ def exporter_livraisons_excel(request):
         try:
             year, month = map(int, selected_month.split('-'))
             num_days = monthrange(year, month)[1]
-            camions = Camion.objects.all().order_by('numero')
 
-            for camion in camions:
+            camions = Camion.objects.all()
+            if selected_camion_id:
+                camions = camions.filter(id=selected_camion_id)
+
+            for camion in camions.order_by('numero'):
                 for day in range(1, num_days + 1):
                     current_date = datetime(year, month, day).date()
                     livraisons = Livraison.objects.filter(camion=camion, date=current_date)
+
+                    if tonnage_filter == 'lt5':
+                        livraisons = livraisons.filter(tonnage__lt=5)
 
                     if livraisons.exists():
                         for livraison in livraisons:
@@ -469,41 +475,35 @@ def exporter_livraisons_excel(request):
                         ]
                         ws.append(ligne)
 
-                        # Appliquer un style spécial à la cellule de la colonne "Statut" uniquement
-                        last_row = ws.max_row
-                        statut_cell = ws.cell(row=last_row, column=10)  # colonne 10 = "Statut"
+                        statut_cell = ws.cell(row=ws.max_row, column=10)
 
-                        # Couleurs spécifiques selon le statut
                         if statut_affiche == "En panne":
-                            statut_cell.fill = PatternFill(start_color="FF9999", end_color="FF9999", fill_type="solid")  # rouge clair
+                            statut_cell.fill = PatternFill(start_color="FF9999", end_color="FF9999", fill_type="solid")
                         elif statut_affiche == "Travaille pas":
-                            statut_cell.fill = PatternFill(start_color="FFF699", end_color="FFF699", fill_type="solid")  # jaune clair
+                            statut_cell.fill = PatternFill(start_color="FFF699", end_color="FFF699", fill_type="solid")
                         elif statut_affiche == "En attente":
-                            statut_cell.fill = PatternFill(start_color="B4C6E7", end_color="B4C6E7", fill_type="solid")  # bleu clair
-
+                            statut_cell.fill = PatternFill(start_color="B4C6E7", end_color="B4C6E7", fill_type="solid")
 
         except ValueError:
             logger.error("Format de mois invalide")
             return HttpResponse("Format de mois invalide")
+
     else:
         livraisons = Livraison.objects.all()
 
         if selected_camion_id:
             livraisons = livraisons.filter(camion_id=selected_camion_id)
-            logger.info(f"Filtrage par camion ({selected_camion_id}): {livraisons.count()} livraisons")
 
         if filter_type == 'date' and selected_date:
             try:
                 selected_date_obj = datetime.strptime(selected_date, "%Y-%m-%d").date()
                 livraisons = livraisons.filter(date=selected_date_obj)
-                logger.info(f"Filtrage par date ({selected_date_obj}): {livraisons.count()} livraisons")
             except ValueError:
                 logger.error("Format de date invalide")
                 livraisons = Livraison.objects.none()
 
         if tonnage_filter == 'lt5':
             livraisons = livraisons.filter(tonnage__lt=5)
-            logger.info(f"Filtrage par tonnage <5: {livraisons.count()} livraisons")
 
         livraisons = livraisons.order_by('camion__numero', 'date')
 
@@ -541,6 +541,7 @@ def exporter_livraisons_excel(request):
     response['Content-Disposition'] = f'attachment; filename={filename}'
     wb.save(response)
     return response
+
 
 # Vue pour l'inscription
 def register(request):
