@@ -139,7 +139,7 @@ def liste_livraisons(request):
     if tonnage_filter == 'lt5':
         livraisons = livraisons.filter(tonnage__lt=5)
 
-    livraisons = livraisons.order_by('-date')
+    livraisons = livraisons.select_related('camion').order_by('-date')
 
     # ✅ Préchargement mémoire
     livraisons_dict = defaultdict(lambda: defaultdict(list))
