@@ -398,7 +398,7 @@ def dashboard(request):
 from django.utils import timezone
 from calendar import monthrange
 from openpyxl import Workbook
-from openpyxl.styles import PatternFill
+from openpyxl.styles import PatternFill, Font, Alignment
 from datetime import datetime, date
 from django.http import HttpResponse
 from collections import defaultdict
@@ -480,13 +480,19 @@ def exporter_livraisons_excel(request):
                             total_montant += l.montant
                     elif tonnage_filter != 'lt5':
                         statut = statuts_dict[camion_id].get(current_date, "En attente")
-                        ligne = [
+                        row_num = ws.max_row + 1
+                        # Ajouter la ligne avec "Aucune livraison" fusionnée
+                        ws.append([
                             current_date.strftime("%d/%m/%Y"),
                             camion.numero,
                             camion.telephone,
                             "", "", "", "", "", "", statut
-                        ]
-                        ws.append(ligne)
+                        ])
+                        # Fusionner les colonnes D -> I (4 à 9)
+                        ws.merge_cells(start_row=row_num, start_column=4, end_row=row_num, end_column=9)
+                        cell = ws.cell(row=row_num, column=4)
+                        cell.value = "Aucune livraison"
+                        cell.alignment = Alignment(horizontal="center", vertical="center")
                         statut_cell = ws.cell(row=ws.max_row, column=10)
                         fill_colors = {
                             "En panne": "FF9999",
