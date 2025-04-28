@@ -1,7 +1,66 @@
+<style>
+    .form-group {
+        display: flex;
+        align-items: center;
+        margin-bottom: 15px;
+    }
+    .form-group i {
+        margin-right: 10px;
+        font-size: 20px;
+        color: #007bff;
+        width: 30px;
+        text-align: center;
+    }
+    .form-group p {
+        margin: 0;
+        flex: 1;
+    }
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+        width: 100%;
+        padding: 8px;
+        margin-top: 5px;
+    }
+</style>
+<!-- Informations camion et date -->
+<div class="mb-4">
+    <h5>Pour le camion : <strong>{{ livraison.camion.numero }}</strong></h5>
+    <h5>Pour la date : <strong>{{ livraison.date|date:"d/m/Y" }}</strong></h5>
+</div>
 <form method="POST" id="editLivraisonForm" action="{% url 'modifier_livraison' livraison.id %}">
     {% csrf_token %}
     <div class="mb-3">
-        {{ form.as_p }}
+
+        <div class="form-group">
+            <i class="fas fa-weight-hanging"></i>
+            {{ form.tonnage }}
+        </div>
+
+        <div class="form-group">
+            <i class="fas fa-sort-numeric-up"></i>
+            {{ form.quantite }}
+        </div>
+
+        <div class="form-group">
+            <i class="fas fa-recycle"></i>
+            {{ form.chiffonage }}
+        </div>
+
+        <div class="form-group">
+            <i class="fas fa-file-alt"></i>
+            {{ form.numero_bl }}
+        </div>
+
+        <div class="form-group">
+            <i class="fas fa-info-circle"></i>
+            {{ form.statut }}
+        </div>
+
     </div>
-    <button type="submit" class="btn btn-primary">Enregistrer</button>
+
+    <!-- Centrage du bouton -->
+    <div class="text-center">
+        <button type="submit" class="btn btn-primary">Enregistrer</button>
+    </div>
 </form>
