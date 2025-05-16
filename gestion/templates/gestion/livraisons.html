@@ -3,7 +3,23 @@
 {% load l10n %}
 
 {% block content %}
+<style>
+    .camion-nav {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 5px;
+        justify-content: center;
+        margin: 20px 0;
+    }
+    .camion-nav a {
+        min-width: 70px;
+        text-align: center;
+    }
+</style>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+
 <div class="container-fluid mt-5">
+
     <h2><i class="fas fa-list text-primary"></i> Liste des Livraisons</h2><br>
 <!-- Formulaire de sélection du camion -->
 <!-- Formulaire de sélection du camion -->
@@ -33,8 +49,7 @@
         <option value="month" {% if filter_type == 'month' %}selected{% endif %}>Mois spécifique</option>
     </select>&nbsp;&nbsp;&nbsp;
 
-
-        <!-- Nouveau bouton pour le filtre tonnage -->
+    <!-- Nouveau bouton pour le filtre tonnage -->
     <form method="GET" class="d-inline-block">
         <input type="hidden" name="filter_type" value="{{ filter_type }}">
         <input type="hidden" name="date" value="{{ selected_date }}">
@@ -82,6 +97,20 @@
         document.getElementById('month_form').style.display = filterType === 'month' ? 'block' : 'none';
     }
 </script>
+
+    <!-- Afficher la navigation par camion UNIQUEMENT en mode mois -->
+{% if show_camion_pagination %}
+    <div class="d-flex justify-content mt-4 mb-4 flex-wrap">
+        {% for cam in all_camions %}
+            <a href="?filter_type=month&month={{ selected_month }}&camion={{ cam.id }}&page={{ forloop.counter }}"
+               class="btn btn-sm {% if current_camions.0.id == cam.id %}btn-primary{% else %}btn-outline-primary{% endif %} mx-1 my-1">
+                {{ cam.numero }}
+            </a>
+        {% endfor %}
+    </div>
+
+
+{% endif %}
 <div class="table-responsive">
     <table class="table table-striped">
         <thead class="table-green">
@@ -101,7 +130,7 @@
         </thead>
 
         <tbody>
-            {% for camion in camions %}
+            {% for camion in current_camions %}
                 {% for day in date_range %}
                     {% with livraisons_par_camion_et_date|get_item:camion.id|get_item:day as livraisons_du_jour %}
                         {% if livraisons_du_jour %}
@@ -116,19 +145,23 @@
                                     <td>{{ livraison.montant }}</td>
                                     <td>{{ livraison.chiffonage }}</td>
                                     <td>{{ livraison.numero_bl }}</td>
-                                    <td> <span class="badge bg-success"> <i class="bi bi-check-circle-fill"></i> {{ livraison.get_statut_display }}</span></td>
+                                    <td>
+    <span class="badge bg-success">
+        <i class="bi bi-check-circle-fill"></i> {{ livraison.get_statut_display }}
+    </span>
+</td>
 
                                     <td>
                                         <div class="d-flex gap-2">
                                             <a href="#" class="btn btn-warning btn-sm btn-edit-livraison" data-id="{{ livraison.id }}">
-                                                <i class="fas fa-edit text-white"></i> 
+                                                <i class="fas fa-edit text-white"></i>
                                             </a>
                                             <a href="{% url 'supprimer_livraison' livraison.id %}" class="btn btn-danger btn-sm"
                                                onclick="return confirm('Voulez-vous vraiment supprimer cette livraison ?');">
-                                                <i class="fas fa-trash text-white"></i> 
+                                                <i class="fas fa-trash text-white"></i>
                                             </a>
                                             <a href="#" class="btn btn-success btn-sm" onclick="afficherIframe('{{ day|date:"Y-m-d" }}', '{{ camion.id }}')">
-                                                <i class="fas fa-plus text-white"></i> 
+                                                <i class="fas fa-plus text-white"></i>
                                             </a>
                                         </div>
                                     </td>
@@ -140,7 +173,8 @@
                                 <td>{{ camion.numero }}</td>
                                 <td>{{ camion.telephone }}</td>
                                 <td colspan="6" class="text-center">Aucune livraison</td>
-                                <td>{% with statuts_par_date|get_item:camion.id|get_item:day as statut_du_jour %}
+                                                                <td>
+    {% with statuts_par_date|get_item:camion.id|get_item:day as statut_du_jour %}
         {% if statut_du_jour == 'En attente' or statut_du_jour == None %}
             <span class="badge bg-primary"><i class="bi bi-hourglass-split"></i> En attente</span>
         {% elif statut_du_jour == 'En panne' %}
@@ -155,14 +189,14 @@
                                 <td>
                                     <div class="d-flex gap-2">
                                         <a href="#" class="btn btn-success btn-sm" onclick="afficherIframe('{{ day|date:"Y-m-d" }}', '{{ camion.id }}')">
-                                            <i class="fas fa-plus text-white"></i> 
+                                            <i class="fas fa-plus text-white"></i>
                                         </a>
                                         {% if camion.id %}
 <!-- Par ceci -->
 <button class="btn btn-info btn-sm btn-edit-statut"
         data-camion-id="{{ camion.id }}"
         data-date="{{ day|date:'Y-m-d' }}">
-    <i class="fas fa-edit text-white"></i> 
+    <i class="fas fa-edit text-white"></i>
 </button>
                                         {% endif %}
                                     </div>
@@ -175,6 +209,16 @@
         </tbody>
     </table>
 </div>
+        <div class="text-center mb-3">
+        <h4>
+            <span class="badge bg-primary">
+                <i class="fas fa-truck"></i> Camion: {{ current_camions.0.numero }}
+            </span>
+            <span class="badge bg-secondary ms-2">
+                {{ selected_date_obj|date:"F Y"|title }}
+            </span>
+        </h4>
+    </div>
 </div>
 
 <!-- Modal -->
