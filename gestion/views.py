@@ -3,6 +3,7 @@ import logging
 from django.contrib.auth import login, authenticate
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth.models import User
+from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django.shortcuts import render, redirect
 from django.urls import reverse
 from openpyxl.workbook import Workbook
@@ -14,6 +15,9 @@ from django.utils.timezone import now
 import json
 from datetime import datetime, date, timedelta
 from django.views.decorators.clickjacking import xframe_options_exempt
+from openpyxl.styles import PatternFill, Font, Alignment
+
+
 @xframe_options_exempt
 def ajouter_livraison(request):
     # Récupérer les paramètres depuis l'URL
@@ -155,11 +159,31 @@ def liste_livraisons(request):
     for s in statuts_qs:
         statuts_dict[s.camion_id][s.date] = s.get_statut_display()
 
-    # Construction des livraisons et statuts par camion et jour
+        # Pagination UNIQUEMENT en mode mois
+    if filter_type == 'month':
+        camions_per_page = 1  # Un seul camion par page
+        paginator = Paginator(camions, camions_per_page)
+        page_number = request.GET.get('page', 1)
+
+        try:
+            page_obj = paginator.page(page_number)
+        except PageNotAnInteger:
+            page_obj = paginator.page(1)
+        except EmptyPage:
+            page_obj = paginator.page(paginator.num_pages)
+
+        current_camions = list(page_obj.object_list)
+    else:
+        # Mode date - pas de pagination, tous les camions
+        page_obj = None
+        paginator = None
+        current_camions = camions
+
+        # Construction des données
     livraisons_par_camion_et_date = {}
     statuts_par_date = {}
 
-    for camion in camions:
+    for camion in current_camions:
         livraisons_par_camion_et_date[camion.id] = {}
         statuts_par_date[camion.id] = {}
 
@@ -172,6 +196,11 @@ def liste_livraisons(request):
 
     # Contexte
     context = {
+        'page_obj': page_obj,
+        'paginator': paginator,
+        'current_camions': current_camions,
+        'all_camions': camions,  # Liste complète pour la navigation
+        'show_camion_pagination': filter_type == 'month',  # Nouveau flag
         'statuts_par_date': statuts_par_date,
         'livraisons': livraisons,
         'camions': camions,
@@ -188,6 +217,8 @@ def liste_livraisons(request):
     return render(request, 'gestion/livraisons.html', context)
 
 
+
+# views.py
 def modifier_statut_camion(request, camion_id):
     camion = get_object_or_404(Camion, id=camion_id)
     date = request.GET.get('date')
@@ -398,7 +429,7 @@ def dashboard(request):
 from django.utils import timezone
 from calendar import monthrange
 from openpyxl import Workbook
-from openpyxl.styles import PatternFill, Font, Alignment
+from openpyxl.styles import PatternFill
 from datetime import datetime, date
 from django.http import HttpResponse
 from collections import defaultdict
@@ -493,11 +524,13 @@ def exporter_livraisons_excel(request):
                         cell = ws.cell(row=row_num, column=4)
                         cell.value = "Aucune livraison"
                         cell.alignment = Alignment(horizontal="center", vertical="center")
+
                         statut_cell = ws.cell(row=ws.max_row, column=10)
                         fill_colors = {
                             "En panne": "FF9999",
                             "Travaille pas": "FFF699",
-                            "En attente": "B4C6E7"
+                            "En attente": "B4C6E7",
+                            "Enregistré": "A8E6A3"
                         }
                         color = fill_colors.get(statut)
                         if color:
@@ -558,8 +591,6 @@ def exporter_livraisons_excel(request):
     return response
 
 
-
-
 # Vue pour l'inscription
 def register(request):
     error = None
@@ -593,8 +624,6 @@ def user_login(request):
             error = "Identifiant ou mot de passe incorrect."
 
     return render(request, "registration/login_register.html", {"login_error": error})
-
-
 
 
 from django.shortcuts import render, redirect
@@ -670,3 +699,5 @@ def supprimer_rapport(request, rapport_id):
     rapport = get_object_or_404(Rapport, id=rapport_id)
     rapport.delete()
     return redirect('liste_rapports')
+
+
