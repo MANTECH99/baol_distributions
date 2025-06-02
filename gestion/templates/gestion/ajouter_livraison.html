@@ -57,6 +57,13 @@
             </div>
         </div>
 
+                <!-- Vérification -->
+<div class="form-field">
+    <label for="id_verification"><i class="fas fa-check-circle me-1"></i>{{ form.verification.label }}</label>
+    {{ form.verification }}
+    <div class="error text-danger" id="error_verification" style="display:none;"></div>
+</div>
+
         <div class="form-actions mt-4 pt-2 border-top">
             <button type="button" class="btn btn-outline-secondary" onclick="fermerIframe()">
                 <i class="fas fa-times me-1"></i>Fermer
