@@ -4,7 +4,7 @@ from .models import Livraison, Rapport
 class LivraisonForm(forms.ModelForm):
     class Meta:
         model = Livraison
-        fields = ['tonnage', 'quantite', 'chiffonage', 'numero_bl', 'statut']
+        fields = ['tonnage', 'quantite', 'chiffonage', 'numero_bl', 'statut', 'verification']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
