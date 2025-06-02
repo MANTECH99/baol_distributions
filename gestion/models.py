@@ -39,6 +39,12 @@ class Livraison(models.Model):
         ('enregistré', 'Enregistré'),
     ]
     statut = models.CharField(max_length=20, choices=STATUT_CHOICES, default='enregistré')
+    VERIFICATION_CHOICES = [
+        ('verifié', 'Vérifié'),
+        ('non_verifié', 'Non vérifié'),
+    ]
+    verification = models.CharField(max_length=20, choices=VERIFICATION_CHOICES, default='non_verifié')
+
 
     def save(self, *args, **kwargs):
         # Définir le prix unitaire selon le tonnage
