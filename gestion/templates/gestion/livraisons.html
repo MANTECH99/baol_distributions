@@ -126,6 +126,7 @@
                 <th><i class="fas fa-barcode text-primary"></i> N° BL</th>
                 <th><i class="fas fa-info-circle text-warning"></i> Statut</th>
                 <th class="text-nowrap"><i class="fas fa-cogs text-secondary"></i> Actions</th>
+                <th>Vérification</th>
             </tr>
         </thead>
 
@@ -165,6 +166,17 @@
                                             </a>
                                         </div>
                                     </td>
+                                                                        <td>
+    {% if livraison.verification == "verifié" %}
+        <span class="text-primary">
+            <i class="bi bi-patch-check-fill me-1"></i> Vérifié
+        </span>
+    {% else %}
+        <span class="text-warning">
+            <i class="bi bi-x-circle-fill me-1"></i> Non vérifié
+        </span>
+    {% endif %}
+</td>
                                 </tr>
                             {% endfor %}
                         {% else %}
