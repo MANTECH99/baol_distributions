@@ -147,5 +147,8 @@ LOGOUT_REDIRECT_URL = '/'  # Redirige après déconnexion
 
 CSRF_TRUSTED_ORIGINS = ['https://web-production-fff9c.up.railway.app']
 
+LOGIN_URL = '/login/'
+
+
 
 
