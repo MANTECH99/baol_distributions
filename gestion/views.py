@@ -90,7 +90,8 @@ from django.shortcuts import render
 from datetime import date, datetime, timedelta
 from collections import defaultdict
 from .models import Livraison, Camion, StatutCamion
-
+from django.contrib.auth.decorators import login_required
+@login_required
 def liste_livraisons(request):
     # Filtres GET
     filter_type = request.GET.get('filter_type')
@@ -286,7 +287,8 @@ def supprimer_livraison(request, livraison_id):
     livraison.delete()
     return redirect('liste_livraisons')
 
-
+from django.contrib.auth.decorators import login_required
+@login_required
 def dashboard(request):
     # Récupérer tous les paramètres de filtre
     filter_type = request.GET.get('filter_type')
